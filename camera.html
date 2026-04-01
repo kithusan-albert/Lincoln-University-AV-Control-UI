@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Camera</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #2d49e8;
+      --blue-light:  #eef1fd;
+      --blue-dark:   #1e36cc;
+      --green:       #2D7D32;
+      --green-dark:  #1b5e20;
+      --red:         #B01A1A;
+      --red-dark:    #7a1010;
+      --footer-bg:   #34333b;
+      --footer-bdr:  #28272e;
+      --bg:          #ffffff;
+      --bg-panel:    #f0f2fa;
+      --border:      #D1D8E0;
+      --btn-bg:      #DDE1E7;
+      --text-dark:   #111827;
+      --text-mid:    #2d3748;
+      --text-muted:  #5a6080;
+      --font: 'Segoe UI', system-ui, Arial, sans-serif;
+    }
+
+
+
+    .panel {
+      width: 1280px; height: 800px;
+      background: var(--bg); overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    /* HEADER */
+    .topbar {
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; height: 60px; flex-shrink: 0;
+    }
+    .topbar-logo { display: flex; align-items: center; gap: 10px; }
+    .logo-crest {
+      width: 36px; height: 36px; background: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: var(--blue);
+    }
+    .topbar-name { color: #fff; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .topbar-name span { display: block; font-size: 10px; font-weight: 400; opacity: 0.8; letter-spacing: 0.1em; margin-top: 2px; }
+    .topbar-room { color: #fff; font-size: 18px; font-weight: 600; letter-spacing: 0.06em; }
+    .topbar-time  { color: #fff; font-size: 18px; font-weight: 400; min-width: 90px; text-align: right; }
+
+    /* MAIN */
+    .main {
+      flex: 1; display: grid;
+      grid-template-columns: 340px 1fr;
+      overflow: hidden; min-height: 0;
+    }
+
+    /* LEFT */
+    .col-left {
+      background: var(--bg-panel);
+      border-right: 1.5px solid var(--border);
+      padding: 24px 20px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .section-label {
+      font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-dark); font-weight: 700; margin-bottom: 2px;
+    }
+
+    .ctrl-group {
+      background: #fff; border-radius: 14px;
+  border: 1.5px solid var(--border); padding: 12px 14px;
+    }
+    .ctrl-group-title {
+      font-size: 12px; color: var(--text-muted); letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 12px; font-weight: 700;
+    }
+
+    /* cam-btn: matches preset-btn sizing — icon top, text below, fills blue when active */
+    /* cam-btn — universal left-panel style: icon inline-left, 16px/700, 60px min-height, fills blue */
+    .cam-btn {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+      border: 1.5px solid var(--border); background: var(--btn-bg);
+      color: var(--text-mid); font-size: 16px; font-weight: 700; cursor: pointer;
+      margin-bottom: 7px; transition: all 0.15s; text-align: left;
+      min-height: 60px; font-family: inherit; gap: 8px;
+    }
+    .cam-btn:last-child { margin-bottom: 0; }
+    .cam-btn:hover { border-color: var(--blue); background: #f5f7ff; }
+    .cam-btn.active {
+      background: var(--blue); border-color: var(--blue); color: #fff;
+      box-shadow: 0 2px 10px rgba(45,73,232,0.22);
+    }
+    .cam-btn.active svg { stroke: #fff; }
+    .cam-btn.active .cam-sub { color: rgba(255,255,255,0.75); }
+    .cam-btn svg { stroke: var(--text-mid); flex-shrink: 0; }
+    .cam-btn:hover svg { stroke: var(--blue); }
+    .cam-left { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+    .cam-name { font-size: 16px; font-weight: 700; color: inherit; display: flex; align-items: center; gap: 7px; }
+    .cam-sub  { font-size: 11px; color: var(--text-muted); transition: color 0.15s; }
+    .cam-btn.active .cam-sub { color: rgba(255,255,255,0.75); }
+    .cam-chevron { stroke: var(--text-muted); opacity: 0.4; flex-shrink: 0; }
+    .cam-btn:hover .cam-chevron { stroke: var(--blue); opacity: 1; }
+    .cam-btn.active .cam-chevron { stroke: #fff; opacity: 1; }
+
+    /* Tracking — plain segmented toggle, no dots */
+    .track-group {
+      display: flex; border-radius: 10px; overflow: hidden;
+      border: 1.5px solid var(--border); background: var(--btn-bg);
+    }
+    .track-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 13px 10px; border: none; background: transparent;
+      color: var(--text-mid); font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: var(--font); transition: all 0.15s;
+    }
+    .track-btn + .track-btn { border-left: 1.5px solid var(--border); }
+    .track-btn svg { stroke: var(--text-mid); flex-shrink: 0; transition: stroke 0.15s; }
+    .track-btn:hover { background: var(--blue-light); color: var(--blue); }
+    .track-btn:hover svg { stroke: var(--blue); }
+    .track-btn.active { background: var(--blue); color: #fff; }
+    .track-btn.active svg { stroke: #fff; }
+
+    /* RIGHT */
+    .col-right {
+      display: flex; flex-direction: column;
+      padding: 24px 28px; gap: 16px;
+      background: #fff; overflow: hidden; min-height: 0;
+    }
+
+    .col-label {
+      font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-dark); font-weight: 700; flex-shrink: 0;
+    }
+    .col-divider { height: 1.5px; background: var(--border); flex-shrink: 0; }
+
+    /* PTZ + ZOOM — unified 4-column grid */
+    .ptz-zoom-section {
+      display: flex;
+      align-items: center; justify-content: center;
+      height: 320px;
+      flex-shrink: 0;
+    }
+
+    .ptz-wrap {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ptz-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) 10px repeat(1, 90px);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 10px;
+      width: min(420px, 100%);
+      height: min(300px, 100%);
+    }
+    .ptz-btn {
+      border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--btn-bg);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.15s; user-select: none;
+    }
+    .ptz-btn svg { stroke: var(--text-dark); width: 28px; height: 28px; flex-shrink: 0; }
+    .ptz-btn:hover { background: var(--blue-light); border-color: var(--blue); }
+    .ptz-btn:hover svg { stroke: var(--blue); }
+    .ptz-btn:active { background: var(--blue); border-color: var(--blue-dark); }
+    .ptz-btn:active svg { stroke: #fff; }
+    .ptz-center { background: transparent; border-color: transparent; cursor: default; pointer-events: none; }
+    .ptz-center:hover { background: transparent; border-color: transparent; }
+    .ptz-center svg { stroke: #d8ddf0; }
+
+    .zoom-btn {
+      border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--btn-bg);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .zoom-btn svg { stroke: var(--text-dark); width: 28px; height: 28px; flex-shrink: 0; }
+    .zoom-btn:hover { background: var(--blue-light); border-color: var(--blue); }
+    .zoom-btn:hover svg { stroke: var(--blue); }
+    .zoom-btn:active { background: var(--blue); border-color: var(--blue-dark); }
+    .zoom-btn:active svg { stroke: #fff; }
+    .zoom-spacer { background: transparent; border: none; pointer-events: none; }
+
+    /* PRESETS */
+    .preset-row { display: flex; gap: 14px; flex-shrink: 0; }
+    .preset-btn {
+  flex: 1; min-height: 70px; border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--btn-bg);
+      color: var(--text-mid); font-size: 17px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; font-family: var(--font);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    }
+    .preset-btn:hover { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+    .preset-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; box-shadow: 0 2px 10px rgba(45,73,232,0.22); }
+    .preset-btn.flash { background: var(--green); border-color: var(--green-dark); color: #fff; }
+
+    /* ── FOOTER (identical to display.html) ── */
+    .bottombar {
+      background: var(--footer-bg);
+      border-top: 2px solid var(--footer-bdr);
+      display: flex; align-items: stretch;
+      height: 88px; flex-shrink: 0;
+    }
+
+    .power-block {
+      background: var(--red);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0 28px; cursor: pointer; border: none;
+      flex-shrink: 0; transition: background 0.15s;
+      color: #fff; font-family: inherit; min-width: 100px; gap: 3px;
+    }
+    .power-block:hover { background: var(--red-dark); }
+    .power-block .foot-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; }
+    .default-block {
+      background: #C89A00;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0 24px; cursor: pointer; border: none;
+      flex-shrink: 0; transition: background 0.15s;
+      color: #fff; font-family: inherit; min-width: 90px; gap: 3px;
+    }
+    .default-block:hover { background: #A07800; }
+    .default-block svg { stroke: #fff; }
+    .default-block .foot-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; }
+
+    /* ── SHUTDOWN MODAL ── */
+    .modal-overlay {
+      display: none; position: absolute; inset: 0;
+      background: rgba(17,24,39,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #fff; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .modal-inner { width: 560px; display: flex; flex-direction: column; align-items: center; }
+    .modal-icon { width: 96px; height: 96px; border-radius: 50%; background: #fde8e8; display: flex; align-items: center; justify-content: center; margin-bottom: 32px; }
+    .modal-title { font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; text-align: center; }
+    .modal-body-text { font-size: 20px; color: var(--text-muted); margin-bottom: 56px; text-align: center; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 24px; justify-content: center; width: 100%; }
+    .modal-btn { flex: 1; max-width: 240px; padding: 22px 24px; border-radius: 16px; border: none; cursor: pointer; font-size: 20px; font-weight: 700; font-family: inherit; transition: filter 0.15s; }
+    .modal-btn:hover { filter: brightness(0.9); }
+    .modal-btn.confirm { background: var(--red); color: #fff; }
+    .modal-btn.cancel { background: var(--btn-bg); color: var(--text-mid); border: 1.5px solid var(--border); }
+
+    .nav-group {
+      display: flex; align-items: stretch; padding: 0; gap: 0;
+      flex: 1;
+    }
+
+    .foot-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex: 1; padding: 0 8px; border-radius: 0; border: none; background: transparent;
+      color: rgba(255,255,255,0.55); cursor: pointer;
+      min-width: 60px; transition: all 0.15s; font-family: inherit;
+      align-self: stretch; gap: 4px;
+    }
+    .foot-btn svg { stroke: rgba(255,255,255,0.55); transition: stroke 0.15s; flex-shrink: 0; }
+    .foot-btn .foot-label { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; color: rgba(255,255,255,0.55); transition: color 0.15s; white-space: nowrap; }
+    .foot-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.9); }
+    .foot-btn:hover svg { stroke: rgba(255,255,255,0.9); }
+    .foot-btn:hover .foot-label { color: rgba(255,255,255,0.9); }
+    .foot-btn.active {
+      background: #e8e8e8; color: var(--text-dark);
+      border-radius: 0;
+    }
+    .foot-btn.active svg { stroke: var(--text-dark); }
+    .foot-btn.active .foot-label { color: var(--text-dark); }
+
+    .right-group {
+      display: flex; align-items: center;
+      padding: 0 16px; gap: 6px; flex-shrink: 0;
+      border-left: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .mic-wrap { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+    .foot-btn.muted { color: #ff6b6b !important; }
+    .foot-btn.muted svg { stroke: #ff6b6b !important; }
+    .foot-btn.muted .foot-label { color: #ff6b6b !important; }
+    .mute-bar {
+      display: none; position: absolute;
+      top: -4px; left: 50%; margin-left: -1.5px;
+      width: 3px; height: 34px; background: #ff6b6b;
+      transform: rotate(45deg); border-radius: 2px; pointer-events: none;
+    }
+    .foot-btn.muted .mute-bar { display: block; }
+
+    .vol-cluster {
+      display: flex; align-items: center; gap: 2px;
+      padding: 6px 4px; align-self: center; height: 56px;
+    }
+    .vol-btn {
+      background: transparent; border: none; cursor: pointer;
+      min-width: 44px; min-height: 44px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .vol-btn:hover { background: rgba(255,255,255,0.15); }
+    .vol-btn svg { stroke: #fff; }
+    .vol-label { font-size: 16px; color: rgba(255,255,255,0.9); font-weight: 700; min-width: 40px; text-align: center; }
+
+    html { background: #1a1a2a; font-family: var(--font); scroll-behavior: smooth; }
+    body {
+      width: 100%; min-height: 100%; background: #1a1a2a;
+      display: flex; flex-direction: column; align-items: center;
+      font-family: var(--font); padding-bottom: 80px;
+    }
+    .panel { flex-shrink: 0; }
+
+    /* ── page chrome ── */
+    .page-chrome {
+      width: 1280px; padding: 24px 0 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .page-label {
+      font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5);
+      letter-spacing: 0.06em;
+    }
+    .page-label strong { color: rgba(255,255,255,0.9); font-size: 15px; }
+
+    /* nav buttons row */
+    .page-nav-row {
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+    .page-nav-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: 10px; border: none;
+      font-family: var(--font); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; text-decoration: none;
+      white-space: nowrap;
+    }
+    .page-nav-btn svg { flex-shrink: 0; }
+    .page-nav-btn.primary {
+      background: #f59e0b; color: #000;
+    }
+    .page-nav-btn.primary svg { stroke: #000; }
+    .page-nav-btn.primary:hover { background: #fbbf24; }
+    .page-nav-btn.secondary {
+      background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8);
+      border: 1.5px solid rgba(255,255,255,0.18);
+    }
+    .page-nav-btn.secondary svg { stroke: rgba(255,255,255,0.8); }
+    .page-nav-btn.secondary:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .page-nav-btn.secondary:hover svg { stroke: #fff; }
+
+    /* ── Design Principles guide ── */
+    .spec-guide { width: 1280px; margin-top: 48px; font-family: var(--font); padding-bottom: 80px; }
+    .spec-guide-inner {
+      background: #fff; border-radius: 20px; border: 1px solid #e0e0e0;
+      padding: 52px 56px 64px; color: #111;
+    }
+    .spec-guide-inner h1 {
+      font-size: 26px; font-weight: 800; color: #111; margin-bottom: 4px;
+    }
+    .spec-tagline { font-size: 14px; color: #888; margin-bottom: 0; }
+    .spec-rule { height: 2px; background: #f0f0f0; margin: 28px 0 44px; }
+
+    .spec-section { margin-bottom: 60px; }
+    .spec-section:last-child { margin-bottom: 0; }
+    .spec-section-hdr {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+      padding-bottom: 14px; border-bottom: 1.5px solid #f0f0f0;
+    }
+    .spec-num {
+      width: 32px; height: 32px; border-radius: 50%; background: #111; color: #fff;
+      font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .spec-section-hdr h2 { font-size: 18px; font-weight: 800; color: #111; }
+
+    /* Two-col layout: example | explanation */
+    .spec-row {
+      display: grid; grid-template-columns: 380px 1fr;
+      gap: 36px; align-items: start; margin-bottom: 28px;
+    }
+    .spec-row:last-child { margin-bottom: 0; }
+    .spec-row + .spec-note { margin-top: -8px; margin-bottom: 28px; }
+
+    .spec-eg {
+      background: #f8f8f6; border: 1px solid #e8e8e8; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100px; padding: 22px; overflow: hidden;
+    }
+    .spec-eg.no-pad { padding: 0; overflow: hidden; }
+
+    .spec-exp { padding-top: 2px; }
+    .spec-exp h3 { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 8px; }
+    .spec-exp p  { font-size: 14px; color: #444; line-height: 1.7; margin: 0 0 10px; }
+    .spec-exp p:last-child { margin-bottom: 0; }
+    .spec-exp ul { font-size: 14px; color: #444; line-height: 1.7; margin: 0 0 10px; padding-left: 20px; }
+    .spec-exp li { margin-bottom: 4px; }
+    .spec-exp code {
+      font-family: 'Consolas','Courier New',monospace; font-size: 12px;
+      color: #2d49e8; background: #eef1fd; border-radius: 4px; padding: 1px 7px;
+    }
+
+    .spec-note {
+      background: #f8f8f6; border-left: 3px solid #2d49e8;
+      border-radius: 0 10px 10px 0; padding: 14px 20px;
+      font-size: 14px; color: #444; line-height: 1.7;
+    }
+
+    /* colour swatches */
+    .swatch-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .swatch {
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      padding: 12px 16px; background: #f8f8f6; border: 1px solid #e8e8e8;
+      border-radius: 12px; min-width: 90px;
+    }
+    .swatch-dot { width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.07); }
+    .swatch-name { font-size: 12px; font-weight: 700; color: #222; text-align: center; line-height: 1.3; }
+    .swatch-hex  { font-size: 11px; color: #888; font-family: 'Consolas', monospace; }
+
+    /* ── FLOATING SCROLL HINT ── */
+    .floating-scroll-hint {
+      position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 14px 12px; background: rgba(26, 26, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
+      color: rgba(255, 255, 255, 0.8); text-decoration: none;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+      z-index: 50; transition: all 0.2s;
+    }
+    .floating-scroll-hint:hover {
+      color: #fff; background: var(--blue); border-color: rgba(255,255,255,0.4);
+    }
+    .floating-scroll-hint svg {
+      width: 24px; height: 24px; stroke: currentColor;
+    }
+  </style>
+</head>
+<body>
+     <!-- CHROME ABOVE PANEL -->
+<div class="page-chrome">
+  <div>
+    <div class="page-label"><strong>Lincoln University AV Control UI</strong></div>
+    <div class="page-label" style="margin-top:4px;">1280 &times; 800 px &nbsp;&middot;&nbsp; Camera Control Screen</div>
+  </div>
+</div>
+
+<div class="panel" id="panel" style="position:relative;">
+
+  <div class="modal-overlay" id="shutdownModal">
+    <div class="modal-box">
+      <div class="modal-inner">
+        <div class="modal-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B01A1A" stroke-width="2" width="48" height="48"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        </div>
+        <div class="modal-title">Shutdown System</div>
+        <div class="modal-body-text">Are you sure you want to shut down this room?<br>All active sessions will be ended.</div>
+        <div class="modal-actions">
+          <button type="button" class="modal-btn confirm" onclick="closeModal()">Yes, Shut Down</button>
+          <button type="button" class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-crest">LU</div>
+      <div class="topbar-name">
+        Lincoln University
+        <span>Te Whare Wānaka o Aoraki</span>
+      </div>
+    </div>
+    <div class="topbar-room">Room / Number</div>
+    <div class="topbar-time" id="clock">4:48 PM</div>
+  </div>
+
+  <div class="main">
+
+    <div class="col-left">
+      <div class="section-label">Camera Controls</div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-group-title">Camera</div>
+        <button type="button" class="cam-btn active" onclick="selectCam(this)">
+          <span class="cam-left">
+            <span class="cam-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              Room Front
+            </span>
+            <span class="cam-sub">Active camera</span>
+          </span>
+          <svg class="cam-chevron" viewBox="0 0 24 24" fill="none" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button type="button" class="cam-btn" onclick="selectCam(this)">
+          <span class="cam-left">
+            <span class="cam-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              Room Rear
+            </span>
+            <span class="cam-sub">Tap to switch</span>
+          </span>
+          <svg class="cam-chevron" viewBox="0 0 24 24" fill="none" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-group-title">Presenter Tracking</div>
+        <button type="button" class="cam-btn active" id="trackOnBtn" onclick="setTracking('on')">
+          <span class="cam-name">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>
+            Tracking On
+          </span>
+        </button>
+        <button type="button" class="cam-btn" id="trackOffBtn" onclick="setTracking('off')">
+          <span class="cam-name">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21" stroke-width="2"/><circle cx="12" cy="12" r="8"/></svg>
+            Tracking Off
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="col-right">
+
+      <div class="col-label">Pan / Tilt &amp; Zoom</div>
+
+      <div class="ptz-zoom-section">
+        <div class="ptz-wrap">
+          <div class="ptz-grid">
+            <div class="ptz-btn ptz-center"></div>
+            <button type="button" class="ptz-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <div class="ptz-btn ptz-center"></div>
+            <div class="zoom-spacer"></div>
+            <button type="button" class="zoom-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="28" height="28">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+
+            <button type="button" class="ptz-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="ptz-btn ptz-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8"/></svg>
+            </div>
+            <button type="button" class="ptz-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <div class="zoom-spacer"></div>
+            <div class="ptz-btn ptz-center"></div>
+
+            <div class="ptz-btn ptz-center"></div>
+            <button type="button" class="ptz-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="ptz-btn ptz-center"></div>
+            <div class="zoom-spacer"></div>
+            <button type="button" class="zoom-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="28" height="28">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-divider"></div>
+
+      <div class="col-label">Presets</div>
+      <div class="preset-row">
+        <button type="button" class="preset-btn" onclick="flashPreset(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Preset 1
+        </button>
+        <button type="button" class="preset-btn" onclick="flashPreset(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Preset 2
+        </button>
+        <button type="button" class="preset-btn" onclick="flashPreset(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Preset 3
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="bottombar">
+
+    <button type="button" class="power-block" id="powerBtn" onclick="confirmPower(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="30" height="30">
+        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>
+      </svg>
+      <span class="foot-label">Shutdown</span>
+    </button>
+
+    <button type="button" class="default-block">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" width="28" height="28"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      <span class="foot-label">Default</span>
+    </button>
+
+    <div class="nav-group">
+      <button type="button" class="foot-btn" onclick="location.href='display.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+        <span class="foot-label">Display</span>
+      </button>
+      <button type="button" class="foot-btn" onclick="location.href='lighting.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/></svg>
+        <span class="foot-label">Lighting</span>
+      </button>
+      <button type="button" class="foot-btn active" onclick="location.href='camera.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <span class="foot-label">Camera</span>
+      </button>
+      <button type="button" class="foot-btn" onclick="location.href='audio.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+        <span class="foot-label">Audio</span>
+      </button>
+      <button type="button" class="foot-btn" onclick="location.href='settings.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="foot-label">Settings</span>
+      </button>
+    </div>
+
+    <div class="right-group">
+      <button type="button" class="foot-btn" id="micMute" onclick="toggleMic()">
+        <div class="mic-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/><line x1="3" y1="3" x2="21" y2="21" stroke-width="2"/></svg>
+          <div class="mute-bar"></div>
+        </div>
+        <span class="foot-label">Mic Mute</span>
+      </button>
+      <div class="vol-cluster">
+        <button type="button" class="vol-btn" onclick="changeVol(-5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+        </button>
+        <button type="button" class="vol-btn" onclick="changeVol(-5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a3 3 0 0 1 0 4.24"/>
+          </svg>
+        </button>
+        <button type="button" class="vol-btn" onclick="changeVol(5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV PANEL -->
+<div class="page-chrome">
+  <div class="page-nav-row">
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='index.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Welcome
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='display.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+      Multi-Display
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='display-simple.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+      Simple Display
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='lighting.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/></svg>
+      Lighting
+    </button>
+    <button type="button" class="page-nav-btn primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Camera
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='audio.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+      Audio
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='settings.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+</div>
+<div class="spec-guide" id="spec-guide">
+<div class="spec-guide-inner">
+
+  <h1>Camera Control UI &mdash; Design Principles</h1>
+  <p class="spec-tagline">Lincoln University AV Control &mdash; Camera Control — interface specification<br><br><strong>Rule of Thumb:</strong> Global UI design (Colour Palette, Header Bar, Footer Navigation Bar, Typography, Shutdown Modal) is documented on the Display page. This page covers Camera-specific elements only.</p>
+  <div class="spec-rule"></div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">1</div><h2>Icon Reference</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;padding:20px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Camera</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2.2" width="26" height="26"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">PTZ Up</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2.2" width="26" height="26"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">PTZ Down</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2.2" width="26" height="26"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">PTZ Left</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2.2" width="26" height="26"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">PTZ Right</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2" width="26" height="26"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Zoom In</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2" width="26" height="26"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Zoom Out</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Tracking On</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21" stroke-width="2"/><circle cx="12" cy="12" r="8"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Tracking Off</span></div>
+      </div>
+      <div class="spec-exp">
+        <h3>Stroke-only SVG icons — Feather/Lucide, <code>fill="none"</code>, <code>stroke="currentColor"</code></h3>
+        <p>PTZ arrows: 30×30px inside preset-style button tiles. Zoom/tracking: 30×30px. Left-panel camera and tracking buttons: 30×30px icons above 16px label text, matching Room Preset button sizing.</p>
+        <ul>
+          <li><strong>Camera</strong> — rect body + right chevron. Footer Camera nav.</li>
+          <li><strong>PTZ Up/Down/Left/Right</strong> — four arrow icons (stem + chevron), sw 2.2.</li>
+          <li><strong>Zoom In / Zoom Out</strong> — magnifying glass with + / − interior.</li>
+          <li><strong>Tracking On</strong> — crosshair/target with 4 tick marks.</li>
+          <li><strong>Tracking Off</strong> — crosshair with diagonal slash through it.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">2</div><h2>Canvas &amp; Panel Size</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;gap:10px;">
+        <div style="width:200px;height:125px;background:#e4e8f0;border-radius:8px;border:2.5px solid #b0b8c8;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="background:#2d49e8;height:16px;width:100%;flex-shrink:0;"></div>
+          <div style="flex:1;display:flex;">
+            <div style="width:56px;background:#f0f2fa;border-right:1px solid #ccc;"></div>
+            <div style="flex:1;background:#fff;"></div>
+          </div>
+          <div style="background:#34333b;height:16px;width:100%;flex-shrink:0;"></div>
+        </div>
+        <span style="font-size:11px;color:#888;font-weight:600;text-align:center;">1280 &times; 800 px — Landscape<br>Left panel + right control area</span>
+      </div>
+      <div class="spec-exp">
+        <h3>1280 &times; 800 pixels, two-column layout — see Display page for full canvas spec</h3>
+        <p>Same canvas as all other pages. Left panel: <strong>340px</strong> for camera selection and tracking controls. Right panel: PTZ pad, zoom and presets. See the Display page for the definitive canvas, header, footer and modal specifications.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">3</div><h2>Left Column — Camera &amp; Tracking Buttons</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;gap:8px;padding:16px;align-items:stretch;">
+        <!-- Camera selector (with chevron) -->
+          <div style="display:flex;align-items:center;justify-content:space-between;background:#2d49e8;border:1.5px solid #2d49e8;border-radius:10px;padding:10px 14px;min-height:60px;gap:8px;">
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div style="font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px;"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" width="16" height="16"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Room Front</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.75);">Active camera</div>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="16" height="16" style="opacity:1;"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:10px;padding:10px 14px;min-height:60px;gap:8px;">
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div style="font-size:16px;font-weight:700;color:#111;display:flex;align-items:center;gap:7px;"><svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" width="16" height="16"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Room Rear</div>
+            <div style="font-size:11px;color:#5a6080;">Tap to switch</div>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2" width="16" height="16" style="opacity:0.4;"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <!-- Tracking (no chevron) -->
+          <div style="display:flex;align-items:center;background:#2d49e8;border:1.5px solid #2d49e8;border-radius:10px;padding:10px 14px;min-height:60px;gap:8px;">
+          <div style="font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px;"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg>Tracking On</div>
+        </div>
+          <div style="display:flex;align-items:center;background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:10px;padding:10px 14px;min-height:60px;gap:8px;">
+          <div style="font-size:16px;font-weight:700;color:#111;display:flex;align-items:center;gap:7px;"><svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" width="16" height="16"><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21" stroke-width="2"/><circle cx="12" cy="12" r="8"/></svg>Tracking Off</div>
+        </div>
+      </div>
+      <div class="spec-exp">
+          <h3>Universal left-panel button style — 16px / weight 700, 60px min-height</h3>
+        <p>All left-panel buttons across Camera, Lighting, and Audio pages use the <strong>same consistent style</strong> as the Display page's <code>display-btn</code>, scaled up to <strong>16px / weight 700</strong> for improved readability:</p>
+        <ul>
+          <li><strong>Layout:</strong> Flex row — 16px icon inline-left inside the label, text left-aligned, right side free.</li>
+            <li><strong>Size:</strong> Full width, <code>padding: 10px 14px</code>, <code>border-radius: 10px</code>, <code>min-height: 60px</code>.</li>
+          <li><strong>Default:</strong> <code>#DDE1E7</code> background, muted text.</li>
+          <li><strong>Active/selected:</strong> <code>#2D49E8</code> blue fill, white text + icon — consistent with display.html.</li>
+          <li><strong>Chevron:</strong> Camera selector buttons include a right-facing chevron (opacity 0.4 default, full on active). Tracking buttons have NO chevron — they are binary toggles, not navigation.</li>
+          <li><strong>Sub-label:</strong> Camera selector shows a secondary line ("Active camera" / "Tap to switch") at 11px. Tracking buttons show label only.</li>
+        </ul>
+        <p>This button style is defined system-wide. Do not deviate from these values on any left-panel button across any page.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">4</div><h2>PTZ Control Buttons</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;gap:10px;padding:20px;align-items:center;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:180px;">
+          <div></div>
+          <div style="background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:10px;height:50px;display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" width="22" height="22"><polyline points="18 15 12 9 6 15"/></svg>
+          </div>
+          <div></div>
+          <div style="background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:10px;height:50px;display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" width="22" height="22"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div style="background:#2d49e8;border-radius:10px;height:50px;display:flex;align-items:center;justify-content:center;">
+            <div style="width:10px;height:10px;background:#fff;border-radius:50%;"></div>
+          </div>
+          <div style="background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:10px;height:50px;display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" width="22" height="22"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div></div>
+          <div style="background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:10px;height:50px;display:flex;align-items:center;justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" width="22" height="22"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div></div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Directional pad — pan and tilt controls</h3>
+        <p>3×3 grid, four cardinal arrow buttons and a blue centre button. Each button: minimum <strong>60–70px</strong> square, 12px radius. Press-and-hold to move, release to stop.</p>
+        <ul>
+          <li>Arrow buttons: <code>#DDE1E7</code> background, dark chevron icon</li>
+          <li>Centre/Home: <code>#2D49E8</code> blue, white dot indicator</li>
+          <li>Zoom In/Out buttons sit in a separate column to the right</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">5</div><h2>Camera Preset Buttons</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;gap:8px;padding:16px;align-items:stretch;">
+        <div style="display:flex;gap:8px;">
+          <div style="flex:1;background:#2d49e8;border:1.5px solid #2d49e8;border-radius:12px;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" width="24" height="24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            <span style="font-size:13px;font-weight:700;color:#fff;">Preset 1</span>
+          </div>
+          <div style="flex:1;background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:12px;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.8" width="24" height="24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            <span style="font-size:13px;font-weight:700;color:#111;">Preset 2</span>
+          </div>
+          <div style="flex:1;background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:12px;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.8" width="24" height="24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            <span style="font-size:13px;font-weight:700;color:#111;">Preset 3</span>
+          </div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Saved position presets — horizontal row, fills blue when active</h3>
+        <p>Presets are a horizontal flex row of equal-width buttons. Camera icon (24px) above preset name (17px / weight 700). <strong>Active preset</strong> fills <code>#2D49E8</code> blue with white icon and text — consistent with the camera and tracking selection buttons.</p>
+        <ul>
+          <li>Minimum <strong>64px tall</strong>, 12px border radius</li>
+          <li>Default: <code>#DDE1E7</code> background, dark text/icon</li>
+          <li>Active: <code>#2D49E8</code> blue, white text/icon, box-shadow</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+  function updateClock() {
+    const now = new Date();
+    let h = now.getHours(), m = now.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    document.getElementById('clock').textContent = `${h}:${String(m).padStart(2,'0')} ${ampm}`;
+  }
+  updateClock(); setInterval(updateClock, 10000);
+
+  function selectCam(btn) {
+    document.querySelectorAll('.cam-btn').forEach(b => {
+      if (b.closest('.ctrl-group') === btn.closest('.ctrl-group')) {
+        b.classList.remove('active');
+      }
+    });
+    btn.classList.add('active');
+    const sub = btn.querySelector('.cam-sub');
+    btn.closest('.ctrl-group').querySelectorAll('.cam-btn').forEach(b => {
+      const s = b.querySelector('.cam-sub');
+      if (s) s.textContent = 'Tap to switch';
+    });
+    if (sub) sub.textContent = 'Active camera';
+  }
+
+  function setTracking(state) {
+    document.getElementById('trackOnBtn').classList.toggle('active', state === 'on');
+    document.getElementById('trackOffBtn').classList.toggle('active', state === 'off');
+  }
+
+  function flashPreset(btn) {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active', 'flash'));
+    btn.classList.add('active');
+  }
+
+  function toggleMic() {
+    const b = document.getElementById('micMute');
+    b.classList.toggle('muted');
+    try { localStorage.setItem('lu_mic_muted', b.classList.contains('muted') ? '1' : '0'); } catch(e) {}
+  }
+  try {
+    if (localStorage.getItem('lu_mic_muted') === '1') {
+      const b = document.getElementById('micMute');
+      if (b) b.classList.add('muted');
+    }
+  } catch(e) {}
+
+  function changeVol(d) {}
+
+  function confirmPower() { document.getElementById('shutdownModal').classList.add('open'); }
+  function closeModal() { document.getElementById('shutdownModal').classList.remove('open'); }
+
+  // Floating Scroll Hint Logic
+  function handleScrollHint(e) {
+    e.preventDefault();
+    const guide = document.getElementById('spec-guide');
+    if (!guide) return window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
+    if (guide.getBoundingClientRect().top > 50) {
+      guide.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
+    }
+  }
+</script>
+
+<a href="#spec-guide" class="floating-scroll-hint" onclick="handleScrollHint(event)">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><line x1="12" y1="4" x2="12" y2="20"/><polyline points="18 14 12 20 6 14"/></svg>
+  Design Principles
+</a>
+
+</body>
+</html>

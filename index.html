@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome — Lincoln University AV</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #2d49e8;
+      --red:         #B01A1A;
+      --red-dark:    #7a1010;
+      --footer-bg:   #34333b;
+      --footer-bdr:  #28272e;
+      --bg:          #34333b;
+      --bg-dark:     #2a292f;
+      --font: 'Segoe UI', system-ui, Arial, sans-serif;
+    }
+
+    html { background: #1a1a2a; font-family: var(--font); scroll-behavior: smooth; }
+    body {
+      width: 100%; min-height: 100%;
+      background: #1a1a2a;
+      display: flex; flex-direction: column; align-items: center;
+      font-family: var(--font);
+      padding-bottom: 80px;
+    }
+
+    /* ── page chrome ── */
+    .page-chrome {
+      width: 1280px; padding: 24px 0 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .page-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; }
+    .page-label strong { color: rgba(255,255,255,0.9); font-size: 15px; }
+    .page-nav-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .page-nav-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: 10px; border: none;
+      font-family: var(--font); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; text-decoration: none; white-space: nowrap;
+    }
+    .page-nav-btn svg { flex-shrink: 0; }
+    .page-nav-btn.primary { background: #f59e0b; color: #000; }
+    .page-nav-btn.primary svg { stroke: #000; }
+    .page-nav-btn.primary:hover { background: #fbbf24; }
+    .page-nav-btn.secondary { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); border: 1.5px solid rgba(255,255,255,0.18); }
+    .page-nav-btn.secondary svg { stroke: rgba(255,255,255,0.8); }
+    .page-nav-btn.secondary:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .page-nav-btn.secondary:hover svg { stroke: #fff; }
+
+    /* ── PANEL ── */
+    .panel {
+      width: 1280px; height: 800px;
+      background: var(--bg);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+
+    /* ── TOP KORU BORDER ── */
+    .koru-border {
+      width: 100%; height: 52px; flex-shrink: 0;
+      background: var(--bg-dark);
+      overflow: hidden; position: relative;
+    }
+    .koru-svg { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+
+    /* ── CLOCK ── */
+    .clock-wrap {
+      position: absolute;
+      top: 62px; right: 36px;
+      font-size: 22px; font-weight: 400;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.04em;
+      z-index: 5;
+    }
+
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 72px;
+      padding: 0 80px;
+      min-height: 0;
+    }
+
+    /* ── LOGO BLOCK ── */
+    .logo-block {
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      flex-shrink: 0;
+    }
+    .logo-crest-placeholder {
+      width: 150px; height: 150px;
+      border: 1.5px solid rgba(255,255,255,0.22);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.03);
+    }
+    .logo-wordmark { text-align: center; }
+    .logo-wordmark .name-main {
+      font-size: 24px; font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; color: rgba(255,255,255,0.88); display: block;
+    }
+    .logo-wordmark .name-sub {
+      font-size: 13px; font-weight: 600; letter-spacing: 0.28em;
+      text-transform: uppercase; color: rgba(255,255,255,0.55); display: block; margin-top: 2px;
+    }
+    .logo-wordmark .name-maori {
+      font-size: 11px; font-weight: 400; letter-spacing: 0.14em;
+      text-transform: uppercase; color: rgba(255,255,255,0.32); display: block; margin-top: 8px;
+    }
+
+    /* vertical divider */
+    .v-divider {
+      width: 1px; height: 200px;
+      background: rgba(255,255,255,0.14);
+      flex-shrink: 0;
+    }
+
+    /* ── WELCOME BLOCK — centred ── */
+    .welcome-block {
+      display: flex; flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+    .welcome-text {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+      text-align: center;
+    }
+    .welcome-text .greeting {
+      font-size: 32px; font-weight: 300;
+      color: rgba(255,255,255,0.75);
+      letter-spacing: 0.02em;
+    }
+    .welcome-text .room-name {
+      font-size: 46px; font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.01em;
+    }
+    .cta-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1.5px solid rgba(255,255,255,0.38);
+      background: transparent;
+      color: rgba(255,255,255,0.78);
+      font-family: var(--font); font-size: 17px; font-weight: 500;
+      letter-spacing: 0.03em;
+      padding: 18px 48px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      animation: pulse-border 3s ease-in-out infinite;
+    }
+    .cta-btn:hover { border-color: rgba(255,255,255,0.75); color: #fff; animation: none; }
+    @keyframes pulse-border {
+      0%, 100% { border-color: rgba(255,255,255,0.38); }
+      50%       { border-color: rgba(255,255,255,0.68); }
+    }
+
+    /* ── FOOTER — blends into panel ── */
+    .bottombar {
+      background: var(--bg);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      display: flex; align-items: stretch;
+      height: 88px; flex-shrink: 0;
+    }
+    .left-group {
+      display: flex; align-items: stretch;
+      border-right: 1px solid rgba(255,255,255,0.08);
+    }
+    .foot-btn {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 22px; border: none; background: transparent;
+      cursor: pointer; min-width: 72px; transition: all 0.15s;
+      align-self: stretch; font-family: inherit;
+    }
+    .foot-btn svg { stroke: rgba(255,255,255,0.35); transition: stroke 0.15s; }
+    .foot-btn:hover { background: rgba(255,255,255,0.06); }
+    .foot-btn:hover svg { stroke: rgba(255,255,255,0.65); }
+    .right-group {
+      margin-left: auto; display: flex; align-items: center;
+      padding: 0 24px; gap: 4px;
+      border-left: 1px solid rgba(255,255,255,0.08);
+    }
+    .mic-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+    .foot-btn.muted svg { stroke: #ff6b6b !important; }
+    .mute-bar {
+      display: none; position: absolute;
+      top: -4px; left: 50%; margin-left: -1.5px;
+      width: 3px; height: 34px; background: #ff6b6b;
+      transform: rotate(45deg); border-radius: 2px; pointer-events: none;
+    }
+    .foot-btn.muted .mute-bar { display: block; }
+    .vol-cluster {
+      display: flex; align-items: center; gap: 2px;
+      align-self: center; height: 56px;
+    }
+    .vol-btn {
+      background: transparent; border: none; cursor: pointer;
+      min-width: 44px; min-height: 44px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .vol-btn:hover { background: rgba(255,255,255,0.10); }
+    .vol-btn svg { stroke: rgba(255,255,255,0.55); transition: stroke 0.15s; }
+    .vol-btn:hover svg { stroke: rgba(255,255,255,0.90); }
+
+    /* ── Design Principles guide ── */
+    .spec-guide { width: 1280px; margin-top: 48px; font-family: var(--font); padding-bottom: 80px; }
+    .spec-guide-inner {
+      background: #fff; border-radius: 20px; border: 1px solid #e0e0e0;
+      padding: 52px 56px 64px; color: #111;
+    }
+    .spec-guide-inner h1 { font-size: 26px; font-weight: 800; color: #111; margin-bottom: 4px; }
+    .spec-tagline { font-size: 14px; color: #888; }
+    .spec-rule { height: 2px; background: #f0f0f0; margin: 28px 0 44px; }
+    .spec-section { margin-bottom: 60px; }
+    .spec-section:last-child { margin-bottom: 0; }
+    .spec-section-hdr {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+      padding-bottom: 14px; border-bottom: 1.5px solid #f0f0f0;
+    }
+    .spec-num {
+      width: 32px; height: 32px; border-radius: 50%; background: #111; color: #fff;
+      font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .spec-section-hdr h2 { font-size: 18px; font-weight: 800; color: #111; }
+    .spec-row {
+      display: grid; grid-template-columns: 380px 1fr;
+      gap: 36px; align-items: start; margin-bottom: 28px;
+    }
+    .spec-row:last-child { margin-bottom: 0; }
+    .spec-eg {
+      background: #f8f8f6; border: 1px solid #e8e8e8; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100px; padding: 22px; overflow: hidden;
+    }
+    .spec-eg.no-pad { padding: 0; }
+    .spec-exp { padding-top: 2px; }
+    .spec-exp h3 { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 8px; }
+    .spec-exp p  { font-size: 14px; color: #444; line-height: 1.7; margin: 0 0 10px; }
+    .spec-exp p:last-child { margin-bottom: 0; }
+    .spec-exp ul { font-size: 14px; color: #444; line-height: 1.7; margin: 0 0 10px; padding-left: 20px; }
+    .spec-exp li { margin-bottom: 4px; }
+    .spec-exp code { font-family: 'Consolas','Courier New',monospace; font-size: 12px; color: #2d49e8; background: #eef1fd; border-radius: 4px; padding: 1px 7px; }
+    .spec-note {
+      background: #f8f8f6; border-left: 3px solid #2d49e8;
+      border-radius: 0 10px 10px 0; padding: 14px 20px;
+      font-size: 14px; color: #444; line-height: 1.7;
+    }
+    .swatch-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .swatch { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 12px 16px; background: #f8f8f6; border: 1px solid #e8e8e8; border-radius: 12px; min-width: 90px; }
+    .swatch-dot { width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.07); }
+    .swatch-name { font-size: 12px; font-weight: 700; color: #222; text-align: center; line-height: 1.3; }
+    .swatch-hex  { font-size: 11px; color: #888; font-family: 'Consolas', monospace; }
+
+    /* ── FLOATING SCROLL HINT ── */
+    .floating-scroll-hint {
+      position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 14px 12px; background: rgba(26, 26, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
+      color: rgba(255, 255, 255, 0.8); text-decoration: none;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+      z-index: 50; transition: all 0.2s;
+    }
+    .floating-scroll-hint:hover {
+      color: #fff; background: var(--blue); border-color: rgba(255,255,255,0.4);
+    }
+    .floating-scroll-hint svg {
+      width: 24px; height: 24px; stroke: currentColor;
+    }
+  </style>
+</head>
+<body>
+
+ <!-- CHROME ABOVE PANEL -->
+<div class="page-chrome">
+  <div>
+    <div class="page-label"><strong>Lincoln University AV Control UI</strong></div>
+    <div class="page-label" style="margin-top:4px;">1280 &times; 800 px &nbsp;&middot;&nbsp; Welcome screen</div>
+  </div>
+</div>
+
+<div class="panel" id="panel">
+
+  <!-- TOP KORU BORDER -->
+  <div class="koru-border">
+    <svg class="koru-svg" viewBox="0 0 1280 52" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="kowhaiwhai" x="0" y="0" width="80" height="52" patternUnits="userSpaceOnUse">
+          <rect width="80" height="52" fill="none"/>
+          <path d="M10 44 Q10 10 30 10 Q50 10 50 28 Q50 44 34 44 Q20 44 20 32 Q20 22 30 22 Q38 22 38 30 Q38 36 32 36"
+                fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M70 8 Q70 42 50 42 Q30 42 30 24 Q30 8 46 8 Q60 8 60 20 Q60 30 50 30 Q42 30 42 22 Q42 16 48 16"
+                fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M62 44 L66 40 L70 44 L66 48 Z" fill="rgba(255,255,255,0.10)"/>
+          <path d="M2 8 L6 4 L10 8 L6 12 Z" fill="rgba(255,255,255,0.08)"/>
+        </pattern>
+      </defs>
+      <rect width="1280" height="52" fill="url(#kowhaiwhai)"/>
+      <line x1="0" y1="1" x2="1280" y2="1" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+    </svg>
+  </div>
+
+  <!-- CLOCK -->
+  <div class="clock-wrap" id="clock">4:50 PM</div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- LOGO BLOCK -->
+    <div class="logo-block">
+      <div class="logo-crest-placeholder">
+        <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg" width="100" height="112">
+          <path d="M4 4 H76 V54 Q76 80 40 88 Q4 80 4 54 Z" stroke="rgba(255,255,255,0.5)" stroke-width="2" fill="rgba(255,255,255,0.03)"/>
+          <line x1="4" y1="32" x2="76" y2="32" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+          <line x1="40" y1="4" x2="40" y2="62" stroke="rgba(255,255,255,0.28)" stroke-width="1.5"/>
+          <text x="13" y="26" font-family="serif" font-size="13" fill="rgba(255,255,255,0.50)" font-weight="700">Y</text>
+          <text x="27" y="26" font-family="serif" font-size="10" fill="rgba(255,255,255,0.36)">✝</text>
+          <text x="36" y="26" font-family="serif" font-size="13" fill="rgba(255,255,255,0.50)" font-weight="700">Y</text>
+          <circle cx="55" cy="16" r="5" stroke="rgba(255,255,255,0.36)" stroke-width="1.5" fill="none"/>
+          <line x1="52" y1="12" x2="49" y2="8" stroke="rgba(255,255,255,0.30)" stroke-width="1.5"/>
+          <line x1="58" y1="12" x2="61" y2="8" stroke="rgba(255,255,255,0.30)" stroke-width="1.5"/>
+          <circle cx="68" cy="18" r="4" stroke="rgba(255,255,255,0.28)" stroke-width="1.2" fill="none"/>
+          <ellipse cx="20" cy="50" rx="7" ry="10" stroke="rgba(255,255,255,0.30)" stroke-width="1.5" fill="none"/>
+          <line x1="20" y1="40" x2="20" y2="60" stroke="rgba(255,255,255,0.20)" stroke-width="1"/>
+          <path d="M53 42 Q60 40 63 48 Q63 56 56 58 Q50 56 50 48 Q50 42 53 42Z" stroke="rgba(255,255,255,0.30)" stroke-width="1.5" fill="none"/>
+          <path d="M56 40 Q56 36 60 34" stroke="rgba(255,255,255,0.24)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path d="M10 68 Q40 75 70 68" stroke="rgba(255,255,255,0.24)" stroke-width="1.5" fill="none"/>
+          <path d="M8 66 L10 68 L8 70" stroke="rgba(255,255,255,0.20)" stroke-width="1" fill="none"/>
+          <path d="M72 66 L70 68 L72 70" stroke="rgba(255,255,255,0.20)" stroke-width="1" fill="none"/>
+        </svg>
+      </div>
+      <div class="logo-wordmark">
+        <span class="name-main">Lincoln</span>
+        <span class="name-sub">University</span>
+        <span class="name-maori">Te Whare Wānaka o Aoraki</span>
+      </div>
+    </div>
+
+    <!-- VERTICAL DIVIDER -->
+    <div class="v-divider"></div>
+
+    <!-- WELCOME + CTA — centred -->
+    <div class="welcome-block">
+      <div class="welcome-text">
+        <span class="greeting">Welcome to</span>
+        <span class="room-name">Room / Number</span>
+      </div>
+      <button type="button" class="cta-btn" onclick="location.href='display-simple.html'">
+        Press the screen to start
+      </button>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="bottombar">
+    <div class="left-group">
+      <button type="button" class="foot-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="28" height="28">
+          <path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/>
+        </svg>
+      </button>
+      <button type="button" class="foot-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="28" height="28">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+        </svg>
+      </button>
+    </div>
+    <div class="right-group">
+      <button type="button" class="foot-btn" id="micMute" onclick="toggleMic()">
+        <div class="mic-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="28" height="28">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+            <line x1="3" y1="3" x2="21" y2="21" stroke-width="2"/>
+          </svg>
+          <div class="mute-bar"></div>
+        </div>
+      </button>
+      <div class="vol-cluster">
+        <button type="button" class="vol-btn" onclick="changeVol(-10)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+        </button>
+        <button type="button" class="vol-btn" onclick="changeVol(-5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a3 3 0 0 1 0 4.24"/>
+          </svg>
+        </button>
+        <button type="button" class="vol-btn" onclick="changeVol(5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- NAV PANEL -->
+<div class="page-chrome">
+  <div class="page-nav-row">
+    <button type="button" class="page-nav-btn primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Welcome
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='display.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+      Multi-Display
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='display-simple.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+      Simple Display
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='lighting.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/></svg>
+      Lighting
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='camera.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Camera
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='audio.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+      Audio
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='settings.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+</div>
+<div class="spec-guide" id="spec-guide">
+<div class="spec-guide-inner">
+
+  <h1>Welcome Screen &mdash; Design Principles</h1>
+  <p class="spec-tagline">Lincoln University AV Control &mdash; Welcome Screen — interface specification</p>
+  <div class="spec-rule"></div>
+
+      <div class="spec-section">
+      <div class="spec-section-hdr"><div class="spec-num">1</div><h2>Icon Reference</h2></div>
+      <div class="spec-row">
+        <div class="spec-eg" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:center;padding:20px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Power</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Welcome</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Display</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Lighting</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Camera</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Audio/Mic</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="26" height="26"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Settings</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2.2" width="26" height="26"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Default</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2" width="26" height="26"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Vol Mute</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2" width="26" height="26"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a3 3 0 0 1 0 4.24"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Vol Low</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2" width="26" height="26"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg><span style="font-size:10px;color:#5a6080;font-weight:600;">Vol High</span></div>
+        </div>
+        <div class="spec-exp">
+          <h3>Stroke-only SVG icons — Feather/Lucide, <code>fill="none"</code>, <code>stroke="currentColor"</code></h3>
+          <p>All icons are inline SVG. No raster or filled icons are used. Footer nav icons: 24×24px, <code>stroke-width="1.8"</code>. Power/Default footer buttons: 28–30px, <code>stroke-width="2.2"</code>. Vol cluster: 24×24px, <code>stroke-width="2.0"</code>.</p>
+          <ul>
+            <li><strong>Power</strong> — arc + vertical stem. Footer Shutdown, 30×30, sw 2.2, red background.</li>
+            <li><strong>Welcome/Home</strong> — house silhouette with door rectangle. Footer and nav panel.</li>
+            <li><strong>Display/Monitor</strong> — rectangle with stand. Footer Display button and nav.</li>
+            <li><strong>Lighting</strong> — lightbulb body + base line. Footer Lighting button and nav.</li>
+            <li><strong>Camera</strong> — rectangle body + right chevron. Footer Camera button and nav.</li>
+            <li><strong>Audio/Mic</strong> — capsule + arc + stand. Footer Audio button and nav.</li>
+            <li><strong>Settings/Gear</strong> — inner circle r=3 + 8-node outer path. Footer Settings and nav.</li>
+            <li><strong>Default/Reset</strong> — CCW circular arrow. Footer Default, 28×28, sw 2.2, amber background.</li>
+            <li><strong>Vol Mute / Vol Low / Vol High</strong> — speaker cone with X / one arc / two arcs. Footer vol-cluster, left to right.</li>
+            <li><strong>Mic Muted</strong> — microphone with diagonal strike-through line (x1="3" y1="3" x2="21" y2="21"). Footer Mic Mute toggled state.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+
+  <!-- 1. CANVAS -->
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">2</div><h2>Canvas &amp; Panel Size</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;gap:10px;">
+        <div style="width:200px;height:125px;background:#34333b;border-radius:8px;border:2.5px solid #4a4950;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="background:#2a292f;height:10px;width:100%;flex-shrink:0;"></div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:10px;padding:8px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
+              <div style="width:28px;height:36px;background:rgba(255,255,255,0.08);border-radius:3px;border:1px solid rgba(255,255,255,0.14);"></div>
+              <div style="width:28px;height:5px;background:rgba(255,255,255,0.20);border-radius:1px;"></div>
+              <div style="width:22px;height:4px;background:rgba(255,255,255,0.12);border-radius:1px;"></div>
+            </div>
+            <div style="width:1px;height:36px;background:rgba(255,255,255,0.15);"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
+              <div style="width:44px;height:7px;background:rgba(255,255,255,0.18);border-radius:2px;"></div>
+              <div style="width:52px;height:11px;background:rgba(255,255,255,0.45);border-radius:2px;"></div>
+              <div style="width:42px;height:8px;background:rgba(255,255,255,0.08);border-radius:10px;border:1px solid rgba(255,255,255,0.22);margin-top:3px;"></div>
+            </div>
+          </div>
+          <div style="background:#34333b;height:13px;width:100%;flex-shrink:0;border-top:1px solid rgba(255,255,255,0.07);"></div>
+        </div>
+        <span style="font-size:11px;color:#888;font-weight:600;text-align:center;">1280 &times; 800 px — Landscape</span>
+      </div>
+      <div class="spec-exp">
+        <h3>1280 &times; 800 pixels, fixed landscape canvas</h3>
+        <p>Same canvas size as all other pages — <strong>1280 × 800 pixels</strong>, landscape, no scrolling. The outer page background matches all other pages at <strong>#1A1A2A</strong>. The panel itself uses <code>#34333B</code> — the same charcoal as the footer on other pages — so the welcome screen feels like a unified dark canvas rather than a white-panel interface.</p>
+        <p>Three vertical zones top to bottom:</p>
+        <ul>
+          <li><strong>Koru border</strong> — 52px. Darker charcoal background with a tiling kowhaiwhai spiral pattern.</li>
+          <li><strong>Main content area</strong> — fills remaining height (~660px). Horizontally centred two-column layout.</li>
+          <li><strong>Footer</strong> — 88px. Same <code>#34333B</code> as the panel — blends seamlessly.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. COLOURS -->
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">3</div><h2>Colour Palette</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="padding:16px;align-items:flex-start;">
+        <div class="swatch-row">
+          <div class="swatch"><div class="swatch-dot" style="background:#34333b;border:1px solid #555;"></div><div class="swatch-name">Panel BG</div><div class="swatch-hex">#34333B</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#2a292f;border:1px solid #444;"></div><div class="swatch-name">Koru Strip</div><div class="swatch-hex">#2A292F</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#1a1a2a;border:1px solid #333;"></div><div class="swatch-name">Outer BG</div><div class="swatch-hex">#1A1A2A</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#ffffff;border:1px solid #ccc;"></div><div class="swatch-name">Room Name</div><div class="swatch-hex">#FFFFFF</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:rgba(255,255,255,0.75);border:1px solid #ccc;"></div><div class="swatch-name">Greeting</div><div class="swatch-hex">rgba(255,255,255,0.75)</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#ff6b6b;"></div><div class="swatch-name">Mute Red</div><div class="swatch-hex">#FF6B6B</div></div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Unified dark palette — no blue accent on this page</h3>
+        <p>The welcome screen deliberately omits the blue header bar. The full panel is one dark tone, creating a calm idle state that contrasts with the active blue-accented operational pages.</p>
+        <ul>
+          <li><strong>Panel BG (#34333B)</strong> — panel body and footer share this colour exactly. The footer has no visual boundary, only a 1px line at <code>rgba(255,255,255,0.07)</code>.</li>
+          <li><strong>Koru Strip (#2A292F)</strong> — slightly darker, used only behind the top decorative band for subtle depth.</li>
+          <li><strong>Room Name (#FFFFFF)</strong> — pure white, full opacity. The only fully white element on the screen — deliberate maximum contrast for the most important piece of information.</li>
+          <li><strong>Greeting (75% white)</strong> — "Welcome to" is dimmer than the room name, reinforcing the hierarchy.</li>
+          <li><strong>Mute Red (#FF6B6B)</strong> — identical to all other pages, used only when the mic is muted.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. TYPOGRAPHY -->
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">4</div><h2>Typography — Welcome Text</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;align-items:center;gap:6px;background:#34333b;padding:32px;">
+        <span style="font-size:32px;font-weight:300;color:rgba(255,255,255,0.75);letter-spacing:0.02em;font-family:'Segoe UI',sans-serif;">Welcome to</span>
+        <span style="font-size:46px;font-weight:700;color:#ffffff;letter-spacing:0.01em;font-family:'Segoe UI',sans-serif;">Room / Number</span>
+        <div style="margin-top:18px;border:1.5px solid rgba(255,255,255,0.38);border-radius:6px;padding:14px 40px;font-size:17px;font-weight:500;color:rgba(255,255,255,0.78);font-family:'Segoe UI',sans-serif;letter-spacing:0.03em;">Press the screen to start</div>
+      </div>
+      <div class="spec-exp">
+        <h3>Three-level welcome hierarchy — light, bold, outlined</h3>
+        <p>The welcome block uses three distinct sizes and weights to create rhythm. All three are horizontally centred as a group:</p>
+        <ul>
+          <li><strong>"Welcome to"</strong> — <strong>32px / weight 300 (light)</strong>. Colour: <code>rgba(255,255,255,0.75)</code>. Letter-spacing: 0.02em. Intentionally smaller and lighter — this is the supporting label, not the primary read.</li>
+          <li><strong>Room / Number</strong> — <strong>46px / weight 700 (bold)</strong>. Colour: <code>#FFFFFF</code> full opacity. The highest-contrast element on the page. Customise per room in Crestron via a text join or hardcoded string.</li>
+          <li><strong>"Press the screen to start"</strong> — <strong>17px / weight 500</strong>. Colour: <code>rgba(255,255,255,0.78)</code>. Set inside a transparent pill with a 1.5px white border at 38% opacity that pulses gently between 38% and 68% on a 3-second loop to draw attention.</li>
+        </ul>
+        <p>Gap between welcome text and CTA button: <strong>32px</strong>.</p>
+      </div>
+    </div>
+    <div class="spec-note">
+      The "Welcome to" line uses weight 300 specifically to contrast the bold room name below it. Do not increase this weight — the visual tension between the two lines is intentional and gives the greeting its elegance. The font size of <strong>32px</strong> for "Welcome to" and <strong>46px</strong> for the room name are the definitive values for this page.
+    </div>
+  </div>
+
+  <!-- 4. LAYOUT -->
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">5</div><h2>Two-Column Layout</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;gap:8px;background:#34333b;padding:24px 32px;align-items:center;">
+        <div style="display:flex;align-items:center;gap:24px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <div style="width:56px;height:56px;border:1.5px solid rgba(255,255,255,0.22);border-radius:4px;background:rgba(255,255,255,0.03);"></div>
+            <div style="width:52px;height:6px;background:rgba(255,255,255,0.28);border-radius:2px;"></div>
+            <div style="width:38px;height:4px;background:rgba(255,255,255,0.16);border-radius:2px;"></div>
+            <div style="width:46px;height:3px;background:rgba(255,255,255,0.10);border-radius:2px;"></div>
+          </div>
+          <div style="width:1px;height:70px;background:rgba(255,255,255,0.16);"></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:7px;">
+            <div style="width:52px;height:7px;background:rgba(255,255,255,0.20);border-radius:2px;"></div>
+            <div style="width:64px;height:11px;background:rgba(255,255,255,0.55);border-radius:2px;"></div>
+            <div style="width:54px;height:7px;background:rgba(255,255,255,0.10);border-radius:10px;border:1px solid rgba(255,255,255,0.28);margin-top:5px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Horizontally centred two-column split with vertical divider</h3>
+        <p>The main content area uses a horizontal flex layout centred in the full 1280px panel. The two halves are separated by a <strong>1px vertical divider</strong> at 200px tall, <code>rgba(255,255,255,0.14)</code>.</p>
+        <ul>
+          <li><strong>Left — Logo block:</strong> Vertically centred column with the placeholder crest (150×150px outlined box), then the wordmark below: "Lincoln" at 24px / weight 700 / ALL CAPS / letter-spacing 0.22em, "University" at 13px / weight 600, and "Te Whare Wānaka o Aoraki" at 11px / weight 400 / 32% opacity. Replace the placeholder box with the real university crest at the same bounding dimensions.</li>
+          <li><strong>Right — Welcome block:</strong> All three elements (greeting, room name, CTA button) centred horizontally with <strong>4px</strong> between the two text lines and <strong>32px</strong> between the text block and the CTA button.</li>
+        </ul>
+        <p>Gap between the two columns: <strong>72px</strong>. Outer horizontal padding of the main area: <strong>80px</strong> each side.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. FOOTER -->
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">6</div><h2>Footer — Blended, No Power Button</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg no-pad">
+        <div style="width:100%;height:72px;background:#34333b;border-radius:13px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:stretch;overflow:hidden;">
+          <div style="display:flex;align-items:stretch;border-right:1px solid rgba(255,255,255,0.08);">
+            <div style="padding:0 16px;display:flex;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" width="22" height="22"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/></svg>
+            </div>
+            <div style="padding:0 16px;display:flex;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8" width="22" height="22"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+            </div>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:2px;padding:0 16px;border-left:1px solid rgba(255,255,255,0.08);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.8" width="22" height="22"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/><line x1="3" y1="3" x2="21" y2="21" stroke-width="2"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" width="22" height="22"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" width="22" height="22"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a3 3 0 0 1 0 4.24"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" width="22" height="22"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>88px footer — same colour as panel, no power or nav buttons</h3>
+        <p>The welcome screen footer differs from all operational pages in two ways:</p>
+        <ul>
+          <li><strong>No power block</strong> — the red shutdown button is absent. The system has not been started yet.</li>
+          <li><strong>No navigation icons</strong> — no page nav buttons. The welcome screen is the entry point; page navigation only appears once the operator taps through to an active page.</li>
+          <li><strong>Background matches panel</strong> — <code>#34333B</code> throughout, separated only by a 1px hairline at <code>rgba(255,255,255,0.07)</code>. The footer visually dissolves into the panel.</li>
+        </ul>
+        <p>What is present: <strong>Left group</strong> — light bulb icon and microphone icon at 35% white opacity (status indicators only). <strong>Right group</strong> — mic-mute toggle and three volume step buttons (mute, low, high), identical in behaviour to all other pages.</p>
+      </div>
+    </div>
+    <div class="spec-note">
+      Both icon groups have a 1px vertical divider at <code>rgba(255,255,255,0.08)</code> on their outer edge. The left group borders right, the right group borders left. No centre divider is needed since there are no nav icons between them.
+    </div>
+  </div>
+
+</div>
+</div>
+
+<a href="#spec-guide" class="floating-scroll-hint" onclick="handleScrollHint(event)">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><line x1="12" y1="4" x2="12" y2="20"/><polyline points="18 14 12 20 6 14"/></svg>
+  Design Principles
+</a>
+
+</body>
+</html>

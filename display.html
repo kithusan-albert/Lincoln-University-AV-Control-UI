@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Display</title>
+  <style>
+    /* =========================================
+       GLOBAL RESET & VARIABLES
+       ========================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #2d49e8;
+      --blue-light:  #eef1fd;
+      --blue-dark:   #1e36cc;
+      --green:       #2D7D32;
+      --green-dark:  #1b5e20;
+      --red:         #B01A1A;
+      --red-dark:    #7a1010;
+      --footer-bg:   #34333b;
+      --footer-bdr:  #28272e;
+      --bg:          #ffffff;
+      --bg-panel:    #f0f2fa;
+      --border:      #D1D8E0;
+      --btn-bg:      #DDE1E7;
+      --text-dark:   #111827;
+      --text-mid:    #2d3748;
+      --text-muted:  #5a6080;
+      --font: 'Segoe UI', system-ui, Arial, sans-serif;
+    }
+
+    html {
+      background: #1a1a2a;
+      font-family: var(--font);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      width: 100%; min-height: 100%;
+      background: #1a1a2a;
+      display: flex; flex-direction: column; align-items: center;
+      font-family: var(--font);
+      padding-bottom: 80px;
+    }
+
+    /* =========================================
+       PAGE CHROME & NAVIGATION (OUTSIDE PANEL)
+       ========================================= */
+    .page-chrome {
+      width: 1280px; padding: 24px 0 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    
+    .page-dim-label {
+      color: #888; font-size: 12px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    
+    .page-dim-label strong { color: #333; font-weight: 700; }
+    
+    .page-label {
+      font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5);
+      letter-spacing: 0.06em;
+    }
+    
+    .page-label strong { color: rgba(255,255,255,0.9); font-size: 15px; }
+
+    .page-nav-row {
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+    
+    .page-nav-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-radius: 10px; border: none;
+      font-family: var(--font); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; text-decoration: none;
+      white-space: nowrap;
+    }
+    
+    .page-nav-btn svg { flex-shrink: 0; }
+    
+    .page-nav-btn.primary { background: #f59e0b; color: #000; }
+    .page-nav-btn.primary svg { stroke: #000; }
+    .page-nav-btn.primary:hover { background: #fbbf24; }
+    
+    .page-nav-btn.secondary {
+      background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8);
+      border: 1.5px solid rgba(255,255,255,0.18);
+    }
+    .page-nav-btn.secondary svg { stroke: rgba(255,255,255,0.8); }
+    .page-nav-btn.secondary:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .page-nav-btn.secondary:hover svg { stroke: #fff; }
+
+    /* =========================================
+       MAIN UI PANEL (1280x800)
+       ========================================= */
+    .panel {
+      width: 1280px; height: 800px;
+      background: var(--bg); overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    /* --- TOP HEADER --- */
+    .topbar {
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; height: 60px; flex-shrink: 0;
+    }
+    .topbar-logo { display: flex; align-items: center; gap: 10px; }
+    .logo-crest {
+      width: 36px; height: 36px; background: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800; color: var(--blue);
+    }
+    .topbar-name { color: #fff; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .topbar-name span { display: block; font-size: 10px; font-weight: 400; opacity: 0.8; letter-spacing: 0.1em; margin-top: 2px; }
+    .topbar-room { color: #fff; font-size: 18px; font-weight: 600; letter-spacing: 0.06em; }
+    .topbar-time  { color: #fff; font-size: 18px; font-weight: 400; min-width: 90px; text-align: right; }
+
+    /* --- MAIN LAYOUT (2 COLUMNS) --- */
+    .main {
+      flex: 1; display: grid;
+      grid-template-columns: 340px 1fr;
+      overflow: hidden; min-height: 0;
+    }
+
+    /* LEFT COLUMN: DISPLAYS */
+    .col-displays {
+      background: var(--bg-panel);
+      border-right: 1.5px solid var(--border);
+      padding: 24px 20px;
+      display: flex; flex-direction: column; gap: 18px;
+    }
+
+    /* RIGHT COLUMN: SOURCES */
+    .col-source {
+      background: var(--bg);
+      padding: 24px 32px;
+      display: flex; flex-direction: column; gap: 16px;
+      overflow: hidden; min-height: 0;
+    }
+
+    .section-label {
+      font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-dark); font-weight: 700; margin-bottom: 2px; flex-shrink: 0;
+    }
+    
+    .disp-hint-text {
+      position: absolute; top: 100%; left: 0;
+      font-size: 11px; font-weight: 400; color: var(--text-muted);
+      text-transform: none; letter-spacing: normal; margin-top: 2px;
+    }
+
+    /* DISPLAY BUTTONS */
+    .display-group {
+      background: #fff; border-radius: 14px; padding: 12px 14px;
+      border: 1.5px solid var(--border);
+    }
+    .display-group-title {
+      font-size: 12px; color: var(--text-muted); letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 10px; font-weight: 700;
+    }
+    
+    /* Matches Lighting.html .scene-btn styling */
+    .display-btn {
+      display: flex; align-items: center; justify-content: flex-start;
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+      border: 1.5px solid var(--border); background: var(--btn-bg);
+      color: var(--text-mid); font-size: 16px; font-weight: 700; cursor: pointer;
+      margin-bottom: 7px; transition: all 0.15s; text-align: left; 
+      min-height: 60px; font-family: inherit; gap: 8px; 
+      position: relative; overflow: hidden;
+    }
+    .display-btn:last-child { margin-bottom: 0; }
+    .display-btn:hover { border-color: var(--blue); background: #f5f7ff; }
+    
+    /* Unified Selection State */
+    .display-btn.selected {
+      background: var(--blue); border-color: var(--blue); color: #fff;
+      box-shadow: 0 2px 10px rgba(45,73,232,0.22);
+    }
+    .display-btn.selected .disp-source-text { color: rgba(255,255,255,0.75); }
+    .display-btn.selected .disp-name { color: #fff; }
+    .display-btn.selected svg { stroke: #fff; }
+
+    .disp-left { 
+      display: flex; flex-direction: column; gap: 2px; align-items: flex-start; 
+    }
+    .disp-name {
+      font-size: 16px; font-weight: 700; color: inherit;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .disp-name svg { stroke: var(--text-mid); transition: stroke 0.15s; }
+    .display-btn:hover .disp-name svg { stroke: var(--blue); }
+    .display-btn.selected .disp-name svg { stroke: #fff; }
+
+    .disp-source-text { 
+      font-size: 11px; font-weight: 400; color: var(--text-muted); transition: color 0.15s; 
+    }
+    .disp-source-text.no-source { font-style: italic; color: var(--text-muted); }
+
+    /* SOURCE BUTTONS */
+    .source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex-shrink: 0; }
+    .source-btn {
+      padding: 20px 16px; border-radius: 14px;
+      border: 1.5px solid var(--border); background: var(--btn-bg);
+      color: var(--text-dark); font-size: 19px; font-weight: 700;
+      cursor: pointer; display: flex; flex-direction: column; align-items: center;
+      gap: 10px; min-height: 108px; justify-content: center; transition: all 0.15s; font-family: inherit;
+    }
+    .source-btn svg { stroke: var(--text-dark); }
+    .source-btn:hover { border-color: var(--blue); background: var(--blue-light); }
+    .source-btn.active { background: var(--green); border-color: var(--green-dark); color: #fff; }
+    .source-btn.active svg { stroke: #fff; }
+    
+    .source-btn.blank {
+      grid-column: 1 / -1; flex-direction: row; justify-content: center;
+      gap: 14px; min-height: 72px;
+      color: var(--text-mid); border-style: solid; background: var(--btn-bg); border-color: var(--border);
+    }
+    .source-btn.blank svg { stroke: var(--text-mid); }
+    .source-btn.blank:hover { background: var(--blue-light); border-color: var(--blue); color: var(--blue); }
+    .source-btn.blank:hover svg { stroke: var(--blue); }
+    .source-btn.blank.selected { background: var(--blue); border-color: var(--blue-dark); color: #fff; box-shadow: 0 2px 10px rgba(45,73,232,0.22); }
+    .source-btn.blank.selected svg { stroke: #fff; }
+
+    /* APPLY ALL BUTTON */
+    .apply-all-wrap {
+      display: flex; justify-content: center;
+      margin-top: 12px; margin-bottom: 8px;
+    }
+    .apply-all-btn {
+      width: 260px; min-height: 60px;
+      border-radius: 14px; cursor: pointer;
+      background: var(--btn-bg); border: 1.5px solid var(--border);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 19px; font-weight: 700; color: var(--text-dark); font-family: inherit;
+      transition: all 0.15s; flex-shrink: 0;
+    }
+    .apply-all-btn:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+    .apply-all-btn:active { transform: scale(0.98); background: #d0d4dc; }
+
+    .divider { height: 1.5px; background: var(--border); flex-shrink: 0; }
+
+    /* AUDIO CONTROLS */
+    .audio-section { display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; margin-top: 6px; }
+    .audio-row { display: flex; align-items: center; gap: 14px; }
+    .audio-icon { flex-shrink: 0; display: flex; align-items: center; }
+    .audio-icon svg { stroke: var(--text-muted); }
+    .audio-label { font-size: 15px; color: var(--text-mid); min-width: 72px; font-weight: 700; }
+    .audio-adj {
+      display: flex; align-items: center; gap: 0; flex: 1;
+      background: var(--bg-panel); border-radius: 12px;
+      border: 1.5px solid var(--border); overflow: hidden;
+    }
+    .audio-step {
+      background: transparent; border: none; cursor: pointer;
+      width: 52px; min-height: 48px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s; font-size: 22px; font-weight: 300; color: var(--text-mid);
+    }
+    .audio-step:hover { background: var(--border); }
+    .audio-step:active { background: var(--blue); color: #fff; }
+    .audio-slider-wrap {
+      flex: 1; display: flex; align-items: center;
+      padding: 6px 10px;
+      border-left: 1.5px solid var(--border);
+      border-right: 1.5px solid var(--border);
+    }
+    .audio-slider {
+      width: 100%; height: 6px; border-radius: 3px; appearance: none;
+      background: var(--border); outline: none; cursor: pointer;
+    }
+    .audio-slider::-webkit-slider-thumb {
+      appearance: none; width: 28px; height: 28px; border-radius: 50%;
+      background: var(--blue); border: 3px solid #fff; cursor: pointer;
+      box-shadow: 0 1px 6px rgba(45,73,232,0.3);
+    }
+
+    /* --- FOOTER NAVIGATION --- */
+    .bottombar {
+      background: var(--footer-bg);
+      border-top: 2px solid var(--footer-bdr);
+      display: flex; align-items: stretch;
+      height: 88px; flex-shrink: 0;
+    }
+    
+    .power-block {
+      background: var(--red);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0 28px; cursor: pointer; border: none;
+      flex-shrink: 0; transition: background 0.15s;
+      color: #fff; font-family: inherit; min-width: 100px; gap: 3px;
+    }
+    .power-block:hover { background: var(--red-dark); }
+    .power-block .foot-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; }
+    
+    .default-block {
+      background: #C89A00;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 0 24px; cursor: pointer; border: none;
+      flex-shrink: 0; transition: background 0.15s;
+      color: #fff; font-family: inherit; min-width: 90px; gap: 3px;
+    }
+    .default-block:hover { background: #A07800; }
+    .default-block svg { stroke: #fff; }
+    .default-block .foot-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; }
+
+    .nav-group {
+      display: flex; align-items: stretch; padding: 0; gap: 0;
+      flex: 1;
+    }
+    .foot-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex: 1; padding: 0 8px; border-radius: 0; border: none; background: transparent;
+      color: rgba(255,255,255,0.55); cursor: pointer;
+      min-width: 60px; transition: all 0.15s; font-family: inherit; align-self: stretch; gap: 4px;
+    }
+    .foot-btn svg { stroke: rgba(255,255,255,0.55); transition: stroke 0.15s; flex-shrink: 0; }
+    .foot-btn .foot-label { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; color: rgba(255,255,255,0.55); transition: color 0.15s; white-space: nowrap; }
+    .foot-btn:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.9); }
+    .foot-btn:hover svg { stroke: rgba(255,255,255,0.9); }
+    .foot-btn:hover .foot-label { color: rgba(255,255,255,0.9); }
+    
+    .foot-btn.active { background: #e8e8e8; color: var(--text-dark); border-radius: 0; }
+    .foot-btn.active svg { stroke: var(--text-dark); }
+    .foot-btn.active .foot-label { color: var(--text-dark); }
+    
+    .right-group {
+      display: flex; align-items: center;
+      padding: 0 16px; gap: 6px; flex-shrink: 0;
+      border-left: 1px solid rgba(255,255,255,0.12);
+    }
+    .mic-wrap { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+    .foot-btn.muted { color: #ff6b6b !important; }
+    .foot-btn.muted svg { stroke: #ff6b6b !important; }
+    .foot-btn.muted .foot-label { color: #ff6b6b !important; }
+    .mute-bar {
+      display: none; position: absolute; top: -4px; left: 50%; margin-left: -1.5px;
+      width: 3px; height: 34px; background: #ff6b6b;
+      transform: rotate(45deg); border-radius: 2px; pointer-events: none;
+    }
+    .foot-btn.muted .mute-bar { display: block; }
+    
+    .vol-cluster {
+      display: flex; align-items: center; gap: 2px;
+      padding: 6px 4px; align-self: center; height: 56px;
+    }
+    .vol-btn {
+      background: transparent; border: none; cursor: pointer;
+      min-width: 44px; min-height: 44px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; transition: background 0.12s;
+    }
+    .vol-btn:hover { background: rgba(255,255,255,0.15); }
+    .vol-btn svg { stroke: #fff; }
+    .vol-label { font-size: 16px; color: rgba(255,255,255,0.9); font-weight: 700; min-width: 40px; text-align: center; }
+
+    /* --- SHUTDOWN MODAL --- */
+    .modal-overlay {
+      display: none; position: absolute; inset: 0;
+      background: rgba(17,24,39,0.82); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #fff; width: 100%; height: 100%; border-radius: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .modal-inner { width: 560px; display: flex; flex-direction: column; align-items: center; }
+    .modal-icon {
+      width: 96px; height: 96px; border-radius: 50%; background: #fde8e8;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 32px;
+    }
+    .modal-title { font-size: 32px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; text-align: center; }
+    .modal-body-text { font-size: 20px; color: var(--text-mid); margin-bottom: 56px; text-align: center; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 24px; justify-content: center; width: 100%; }
+    .modal-btn {
+      flex: 1; max-width: 240px; padding: 22px 24px; border-radius: 16px; border: none; cursor: pointer;
+      font-size: 20px; font-weight: 700; font-family: inherit; transition: filter 0.15s;
+    }
+    .modal-btn:hover { filter: brightness(0.9); }
+    .modal-btn.confirm { background: var(--red); color: #fff; }
+    .modal-btn.cancel { background: var(--btn-bg); color: var(--text-mid); border: 1.5px solid var(--border); }
+    .modal-btn.cancel:hover { filter: none; background: var(--border); }
+
+    /* =========================================
+       SPEC GUIDE (DOCUMENTATION PORTION)
+       ========================================= */
+    .spec-guide { width: 1280px; margin-top: 48px; font-family: var(--font); padding-bottom: 80px; }
+    .spec-guide-inner {
+      background: #fff; border-radius: 20px; border: 1px solid #e0e0e0;
+      padding: 52px 56px 64px; color: #111;
+    }
+    .spec-guide-inner h1 {
+      font-size: 26px; font-weight: 800; color: #111; margin-bottom: 4px;
+    }
+    .spec-tagline { font-size: 14px; color: #888; margin-bottom: 0; }
+    .spec-rule { height: 2px; background: #f0f0f0; margin: 28px 0 44px; }
+
+    .spec-section { margin-bottom: 60px; }
+    .spec-section:last-child { margin-bottom: 0; }
+    .spec-section-hdr {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+      padding-bottom: 14px; border-bottom: 1.5px solid #f0f0f0;
+    }
+    .spec-num {
+      width: 32px; height: 32px; border-radius: 50%; background: #111; color: #fff;
+      font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .spec-section-hdr h2 { font-size: 18px; font-weight: 800; color: #111; }
+
+    .spec-row {
+      display: grid; grid-template-columns: 380px 1fr;
+      gap: 36px; align-items: start; margin-bottom: 28px;
+    }
+    .spec-row:last-child { margin-bottom: 0; }
+    .spec-row + .spec-note { margin-top: -8px; margin-bottom: 28px; }
+
+    .spec-eg {
+      background: #f8f8f6; border: 1px solid #e8e8e8; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100px; padding: 22px; overflow: hidden;
+    }
+    .spec-eg.no-pad { padding: 0; overflow: hidden; }
+
+    .spec-exp { padding-top: 2px; }
+    .spec-exp h3 { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 8px; }
+    .spec-exp p  { font-size: 14px; color: #444; line-height: 1.7; margin: 0 0 10px; }
+    .spec-exp p:last-child { margin-bottom: 0; }
+    .spec-exp ul { font-size: 14px; color: #444; line-height: 1.7; margin: 0 0 10px; padding-left: 20px; }
+    .spec-exp li { margin-bottom: 4px; }
+    .spec-exp code {
+      font-family: 'Consolas','Courier New',monospace; font-size: 12px;
+      color: #2d49e8; background: #eef1fd; border-radius: 4px; padding: 1px 7px;
+    }
+
+    .spec-note {
+      background: #f8f8f6; border-left: 3px solid #2d49e8;
+      border-radius: 0 10px 10px 0; padding: 14px 20px;
+      font-size: 14px; color: #444; line-height: 1.7;
+    }
+
+    /* colour swatches for spec doc */
+    .swatch-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .swatch {
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      padding: 12px 16px; background: #f8f8f6; border: 1px solid #e8e8e8;
+      border-radius: 12px; min-width: 90px;
+    }
+    .swatch-dot { width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.07); }
+    .swatch-name { font-size: 12px; font-weight: 700; color: #222; text-align: center; line-height: 1.3; }
+    .swatch-hex  { font-size: 11px; color: #888; font-family: 'Consolas', monospace; }
+
+    /* ── FLOATING SCROLL HINT ── */
+    .floating-scroll-hint {
+      position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 14px 12px; background: rgba(26, 26, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px;
+      color: rgba(255, 255, 255, 0.8); text-decoration: none;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+      z-index: 50; transition: all 0.2s;
+    }
+    .floating-scroll-hint:hover {
+      color: #fff; background: var(--blue); border-color: rgba(255,255,255,0.4);
+    }
+    .floating-scroll-hint svg {
+      width: 24px; height: 24px; stroke: currentColor;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-chrome">
+  <div>
+    <div class="page-label"><strong>Lincoln University AV Control UI</strong></div>
+    <div class="page-label" style="margin-top:4px;">1280 &times; 800 px &nbsp;&middot;&nbsp; Multi-Display screen</div>
+  </div>
+</div>
+
+<div class="panel" id="panel" style="position:relative;">
+
+  <div class="modal-overlay" id="shutdownModal">
+    <div class="modal-box">
+      <div class="modal-inner">
+        <div class="modal-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B01A1A" stroke-width="2" width="48" height="48">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <div class="modal-title">Shutdown System</div>
+        <div class="modal-body-text">Are you sure you want to shut down this room?<br>All active sessions will be ended.</div>
+        <div class="modal-actions">
+          <button type="button" class="modal-btn confirm" onclick="closeModal()">Yes, Shut Down</button>
+          <button type="button" class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-crest">LU</div>
+      <div class="topbar-name">
+        Lincoln University
+        <span>Te Whare Wānaka o Aoraki</span>
+      </div>
+    </div>
+    <div class="topbar-room">Room / Number</div>
+    <div class="topbar-time" id="clock">4:48 PM</div>
+  </div>
+
+  <div class="main">
+
+    <div class="col-displays">
+      <div class="section-label" style="position: relative;">
+        Displays
+        <div class="disp-hint-text">Optional: Tap a display below and select a individual source</div>
+      </div>
+
+      <div class="display-group">
+        <div class="display-group-title">Projector</div>
+        <button type="button" class="display-btn" onclick="selectDisplay(this)">
+          <span class="disp-left">
+            <span class="disp-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="16" cy="12" r="3"/><line x1="6" y1="10" x2="10" y2="10"/><line x1="6" y1="14" x2="10" y2="14"/><path d="M13 6V4h2v2"/><path d="M17 6V4h2v2"/><path d="M5 18v2h3v-2"/><path d="M16 18v2h3v-2"/>
+              </svg>
+              Projector
+            </span>
+            <span class="disp-source-text">Active Source: Room PC</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="display-group">
+        <div class="display-group-title">Podium</div>
+        <button type="button" class="display-btn" onclick="selectDisplay(this)">
+          <span class="disp-left">
+            <span class="disp-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> 
+              Podium Display
+            </span>
+            <span class="disp-source-text no-source">Active Source: None</span>
+          </span>
+        </button>
+      </div>
+
+      <div class="display-group">
+        <div class="display-group-title">Audience View: Displays</div>
+        <button type="button" class="display-btn" onclick="selectDisplay(this)">
+          <span class="disp-left">
+            <span class="disp-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+              Front Left
+            </span>
+            <span class="disp-source-text">Active Source: Room PC</span>
+          </span>
+        </button>
+        
+        <button type="button" class="display-btn" onclick="selectDisplay(this)">
+          <span class="disp-left">
+            <span class="disp-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+              Front Right
+            </span>
+            <span class="disp-source-text">Active Source: Room PC</span>
+          </span>
+        </button>
+        
+        <button type="button" class="display-btn" onclick="selectDisplay(this)">
+          <span class="disp-left">
+            <span class="disp-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+              Rear Left
+            </span>
+            <span class="disp-source-text no-source">Active Source: None</span>
+          </span>
+        </button>
+        
+        <button type="button" class="display-btn" onclick="selectDisplay(this)">
+          <span class="disp-left">
+            <span class="disp-name">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+              Rear Right
+            </span>
+            <span class="disp-source-text no-source">Active Source: None</span>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div class="col-source">
+      <div class="section-label">Select source</div>
+
+      <div class="source-grid">
+        <button type="button" class="source-btn blank" onclick="toggleBlank(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="34" height="34">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/>
+          </svg>
+          Blank all displays
+        </button>
+        
+        <button type="button" class="source-btn active" id="src-roompc" onclick="selectSource(this)">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="34" height="34">
+            <path d="M12 8v-1.5c0-1.2 2-1 2-2.5s-2-1.2-2-2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <rect x="2" y="9" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="6.2" y="9" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="10.4" y="9" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="14.6" y="9" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="18.8" y="9" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="2" y="13.2" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="6.2" y="13.2" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="10.4" y="13.2" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="14.6" y="13.2" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="18.8" y="13.2" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="2" y="17.4" width="3.2" height="3.2" rx="0.6"/>
+            <rect x="6.2" y="17.4" width="11.6" height="3.2" rx="0.6"/>
+            <rect x="18.8" y="17.4" width="3.2" height="3.2" rx="0.6"/>
+          </svg>
+          Room PC
+        </button>
+        
+        <button type="button" class="source-btn" onclick="selectSource(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="34" height="34">
+            <path d="M12 20h.01" stroke-width="4"/><path d="M8 15.5a5.5 5.5 0 0 1 8 0"/><path d="M4 11.5a11 11 0 0 1 16 0"/><path d="M1 7.5a15 15 0 0 1 22 0"/>
+          </svg>          
+          WiDi
+        </button>
+        
+        <button type="button" class="source-btn" onclick="selectSource(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="34" height="34">
+            <rect x="13" y="17" width="8" height="4" rx="1"/><path d="M17 17V7a2 2 0 0 0-2-2H8"/><rect x="5" y="5" width="6" height="4" rx="1"/><path d="M7 9v2h2V9"/><line x1="3" y1="21" x2="10" y2="21"/>
+          </svg>          
+          Doc Cam
+        </button>
+        
+        <button type="button" class="source-btn" onclick="selectSource(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="34" height="34">
+            <path d="M2 7h20v5l-3 4H5l-3-4V7z"/><line x1="6" y1="11" x2="18" y2="11"/>
+          </svg>          
+          HDMI
+        </button>
+      </div>
+
+      <div class="apply-all-wrap">
+        <button type="button" class="apply-all-btn" id="sendAllBtn" onclick="sendToAll()">
+          Apply All
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="audio-section">
+        <div class="section-label">Audio</div>
+        <div class="audio-row" style="flex:1;">
+          <div class="audio-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" width="22" height="22"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          </div>
+          <span class="audio-label">Master Vol</span>
+          <div class="audio-adj" style="flex:1;">
+            <button type="button" class="audio-step" onclick="adjustAudio('master-slider',-5)">−</button>
+            <div class="audio-slider-wrap" style="flex:1;">
+              <input class="audio-slider" type="range" min="0" max="100" value="80" step="1" id="master-slider" oninput="adjustAudio('master-slider',0);">
+            </div>
+            <button type="button" class="audio-step" onclick="adjustAudio('master-slider',5)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <div class="bottombar">
+
+    <button type="button" class="power-block" id="powerBtn" onclick="confirmPower(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="30" height="30">
+        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>
+      </svg>
+      <span class="foot-label">Shutdown</span>
+    </button>
+
+    <button type="button" class="default-block" onclick="applyDefaultSettings()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" width="28" height="28">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+      </svg>
+      <span class="foot-label">Default</span>
+    </button>
+
+    <div class="nav-group">
+      <button type="button" class="foot-btn active" onclick="location.href='display.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+        <span class="foot-label">Display</span>
+      </button>
+      <button type="button" class="foot-btn" onclick="location.href='lighting.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/></svg>
+        <span class="foot-label">Lighting</span>
+      </button>
+      <button type="button" class="foot-btn" onclick="location.href='camera.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <span class="foot-label">Camera</span>
+      </button>
+      <button type="button" class="foot-btn" onclick="location.href='audio.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+        <span class="foot-label">Audio</span>
+      </button>
+      <button type="button" class="foot-btn" onclick="location.href='settings.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="foot-label">Settings</span>
+      </button>
+    </div>
+
+    <div class="right-group">
+      <button type="button" class="foot-btn" id="micMute" onclick="toggleMic()">
+        <div class="mic-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="24" height="24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/><line x1="3" y1="3" x2="21" y2="21" stroke-width="2"/></svg>
+          <div class="mute-bar"></div>
+        </div>
+        <span class="foot-label">Mic Mute</span>
+      </button>
+      <div class="vol-cluster">
+        <button type="button" class="vol-btn" onclick="changeVol(-5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+        </button>
+        <button type="button" class="vol-btn" onclick="changeVol(-5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a3 3 0 0 1 0 4.24"/>
+          </svg>
+        </button>
+        <button type="button" class="vol-btn" onclick="changeVol(5)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="26" height="26">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-chrome">
+  <div class="page-nav-row">
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='index.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Welcome
+    </button>
+    <button type="button" class="page-nav-btn primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+      Multi-Display
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='display-simple.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+      Simple Display
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='lighting.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/></svg>
+      Lighting
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='camera.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Camera
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='audio.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+      Audio
+    </button>
+    <button type="button" class="page-nav-btn secondary" onclick="location.href='settings.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </div>
+</div>
+
+<script>
+  // CLOCK
+  function updateClock() {
+    const now = new Date();
+    let h = now.getHours(), m = now.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    document.getElementById('clock').textContent = `${h}:${String(m).padStart(2,'0')} ${ampm}`;
+  }
+  updateClock(); 
+  setInterval(updateClock, 10000);
+
+  // AUDIO ADJUSTMENT
+  function changeVol(d) {
+    const s = document.getElementById('master-slider');
+    let v = Math.max(0, Math.min(100, parseInt(s.value) + d));
+    s.value = v;
+    if (document.getElementById('vol-disp')) document.getElementById('vol-disp').textContent = v;
+  }
+  
+  function adjustAudio(sliderId, delta) {
+    const s = document.getElementById(sliderId);
+    let v = Math.max(0, Math.min(100, parseInt(s.value) + delta));
+    s.value = v;
+    if (sliderId === 'master-slider' && document.getElementById('vol-disp')) document.getElementById('vol-disp').textContent = v;
+  }
+
+  // MICROPHONE MUTE
+  function toggleMic() {
+    const b = document.getElementById('micMute');
+    b.classList.toggle('muted');
+    try { localStorage.setItem('lu_mic_muted', b.classList.contains('muted') ? '1' : '0'); } catch(e) {}
+  }
+  
+  // Sync mic mute state with audio page via localStorage
+  try {
+    if (localStorage.getItem('lu_mic_muted') === '1') {
+      const b = document.getElementById('micMute');
+      if (b) b.classList.add('muted');
+    }
+  } catch(e) {}
+  
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'lu_mic_muted') {
+      const b = document.getElementById('micMute');
+      if (b) b.classList.toggle('muted', e.newValue === '1');
+    }
+  });
+
+  // DISPLAY TARGETING
+  function selectDisplay(btn) {
+    const wasSelected = btn.classList.contains('selected');
+    document.querySelectorAll('.display-btn').forEach(b => b.classList.remove('selected'));
+    
+    if (!wasSelected) {
+      btn.classList.add('selected');
+      
+      const txt = btn.querySelector('.disp-source-text');
+      if (txt) {
+        const currentSource = txt.textContent.replace('Active Source:', '').trim();
+        
+        // Clear all source highlights
+        document.querySelectorAll('.source-btn:not(.blank)').forEach(b => b.classList.remove('active'));
+        const blankBtn = document.querySelector('.source-btn.blank');
+        if(blankBtn) blankBtn.classList.remove('selected');
+
+        // Highlight the matching source
+        if (currentSource === 'None' || currentSource === 'Blank') {
+          if(blankBtn) blankBtn.classList.add('selected');
+        } else {
+          document.querySelectorAll('.source-btn:not(.blank)').forEach(srcBtn => {
+            if (srcBtn.textContent.trim() === currentSource) {
+              srcBtn.classList.add('active');
+            }
+          });
+        }
+      }
+    }
+  }
+
+  function updateDisplay(btn, label, isBlank) {
+    const txt = btn.querySelector('.disp-source-text');
+    if (txt) {
+      txt.textContent = 'Active Source: ' + (isBlank ? 'None' : label);
+      txt.classList.toggle('no-source', isBlank);
+    }
+  }
+
+  // SOURCE SELECTION
+  function selectSource(btn) {
+    document.querySelectorAll('.source-btn:not(.blank)').forEach(b => b.classList.remove('active'));
+    const blankBtn = document.querySelector('.source-btn.blank');
+    if (blankBtn) blankBtn.classList.remove('selected');
+    
+    btn.classList.add('active');
+
+    const label = btn.textContent.trim();
+    const sel = document.querySelector('.display-btn.selected');
+
+    if (sel) {
+      // Manual override to selected display only
+      updateDisplay(sel, label, false);
+      sel.classList.remove('selected');
+    } else {
+      // Default: apply to all displays
+      document.querySelectorAll('.display-btn').forEach(dBtn => updateDisplay(dBtn, label, false));
+    }
+  }
+
+  function toggleBlank(btn) {
+    document.querySelectorAll('.source-btn:not(.blank)').forEach(b => b.classList.remove('active'));
+    btn.classList.toggle('selected');
+    const isBlank = btn.classList.contains('selected');
+
+    const sel = document.querySelector('.display-btn.selected');
+    
+    if (sel) {
+      updateDisplay(sel, 'Blank', isBlank);
+      sel.classList.remove('selected');
+    } else {
+      document.querySelectorAll('.display-btn').forEach(dBtn => updateDisplay(dBtn, 'Blank', isBlank));
+    }
+  }
+
+  // APPLY ALL
+  function sendToAll() {
+    const activeSource = document.querySelector('.source-btn.active');
+    const blankActive = document.querySelector('.source-btn.blank.selected');
+    const label = blankActive ? 'None' : (activeSource ? activeSource.textContent.trim() : null);
+    if (!label) return;
+    const isBlank = !!blankActive;
+    
+    document.querySelectorAll('.display-btn').forEach(btn => {
+      updateDisplay(btn, label, isBlank);
+      btn.classList.remove('selected');
+    });
+  }
+
+  // DEFAULT SETTINGS OVERRIDE
+  function applyDefaultSettings() {
+    // 1. Force Master Volume to 80%
+    const masterSlider = document.getElementById('master-slider');
+    if (masterSlider) {
+      masterSlider.value = 80;
+      adjustAudio('master-slider', 0); 
+    }
+
+    // 2. Clear selections on source & blank buttons
+    document.querySelectorAll('.source-btn:not(.blank)').forEach(b => b.classList.remove('active'));
+    const blankBtn = document.querySelector('.source-btn.blank');
+    if(blankBtn) blankBtn.classList.remove('selected');
+
+    // 3. Highlight Room PC as the active global source intent
+    const roomPcBtn = document.getElementById('src-roompc');
+    if(roomPcBtn) roomPcBtn.classList.add('active');
+
+    // 4. Update targeted displays
+    const roomPCTargets = ["Front Left", "Front Right", "Podium Display"];
+    const offTargets = ["Projector"];
+
+    document.querySelectorAll('.display-btn').forEach(btn => {
+      const nameEl = btn.querySelector('.disp-name');
+      if (!nameEl) return;
+      const name = nameEl.textContent.trim();
+      
+      // We explicitly leave Rear Left/Right untouched per instructions
+      if (roomPCTargets.includes(name)) {
+        updateDisplay(btn, 'Room PC', false);
+      } else if (offTargets.includes(name)) {
+        updateDisplay(btn, 'None', true);
+      }
+      
+      // Clear manual select states just in case
+      btn.classList.remove('selected');
+    });
+  }
+
+  // INITIALISATION
+  window.addEventListener('DOMContentLoaded', () => { 
+    // Initial setup for display source text
+    document.querySelectorAll('.disp-source-text').forEach(el => {
+      if (!el.classList.contains('no-source')) {
+        el.textContent = 'Active Source: Room PC';
+      } else {
+        el.textContent = 'Active Source: None';
+      }
+    });
+  });
+
+  // MODAL CONTROLS
+  function confirmPower(btn) { document.getElementById('shutdownModal').classList.add('open'); }
+  function closeModal() { document.getElementById('shutdownModal').classList.remove('open'); }
+
+  // Floating Scroll Hint Logic
+  function handleScrollHint(e) {
+    e.preventDefault();
+    const guide = document.getElementById('spec-guide');
+    if (!guide) return window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
+    if (guide.getBoundingClientRect().top > 50) {
+      guide.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
+    }
+  }
+</script>
+
+<div class="spec-guide" id="spec-guide">
+<div class="spec-guide-inner">
+
+  <h1>Multi-Display UI &mdash; Design Principles</h1>
+  <p class="spec-tagline">Lincoln University AV Control — reference guide for recreating this page in Crestron touchpanel software.<br><br><strong>Rule of Thumb:</strong> All global UI design setups (Colour Palette, Header Bar, Footer Navigation Bar, Typography, Shutdown Modal) are detailed on this baseline Display page. Other pages will only detail their page-specific elements and variations.</p>
+  <div class="spec-rule"></div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">1</div><h2>Iconography &amp; Vectors</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:row; flex-wrap:wrap; gap:16px; padding:24px; align-items:flex-start; align-content: flex-start;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2" width="24" height="24"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Monitor</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B01A1A" stroke-width="2" width="24" height="24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Power</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#C89A00" stroke-width="2" width="24" height="24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Rotate-CCW</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2D7D32" stroke-width="2" width="24" height="24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Volume-2</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" width="24" height="24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Settings</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" width="24" height="24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Eye-Off</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2" width="24" height="24"><path d="M12 20h.01" stroke-width="4"/><path d="M8 15.5a5.5 5.5 0 0 1 8 0"/><path d="M4 11.5a11 11 0 0 1 16 0"/><path d="M1 7.5a15 15 0 0 1 22 0"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Cast</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" width="24" height="24"><polyline points="9 18 15 12 9 6"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Chevron-Rt</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" width="24" height="24"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Lightbulb</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" width="24" height="24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Video</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" width="24" height="24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Mic</span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" width="24" height="24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Volume-X</span>
+        </div>
+
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="1.8" width="24" height="24" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="16" cy="12" r="3"/><line x1="6" y1="10" x2="10" y2="10"/><line x1="6" y1="14" x2="10" y2="14"/><path d="M13 6V4h2v2"/><path d="M17 6V4h2v2"/><path d="M5 18v2h3v-2"/><path d="M16 18v2h3v-2"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Projector<br><i style="font-size:8px; font-weight:normal;">(Custom - Find similar)</i></span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="#2d49e8" width="24" height="24"><path d="M12 8v-1.5c0-1.2 2-1 2-2.5s-2-1.2-2-2.5" fill="none" stroke="#2d49e8" stroke-width="2" stroke-linecap="round"/><rect x="2" y="9" width="3.2" height="3.2" rx="0.6"/><rect x="6.2" y="9" width="3.2" height="3.2" rx="0.6"/><rect x="10.4" y="9" width="3.2" height="3.2" rx="0.6"/><rect x="14.6" y="9" width="3.2" height="3.2" rx="0.6"/><rect x="18.8" y="9" width="3.2" height="3.2" rx="0.6"/><rect x="2" y="13.2" width="3.2" height="3.2" rx="0.6"/><rect x="6.2" y="13.2" width="3.2" height="3.2" rx="0.6"/><rect x="10.4" y="13.2" width="3.2" height="3.2" rx="0.6"/><rect x="14.6" y="13.2" width="3.2" height="3.2" rx="0.6"/><rect x="18.8" y="13.2" width="3.2" height="3.2" rx="0.6"/><rect x="2" y="17.4" width="3.2" height="3.2" rx="0.6"/><rect x="6.2" y="17.4" width="11.6" height="3.2" rx="0.6"/><rect x="18.8" y="17.4" width="3.2" height="3.2" rx="0.6"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Room PC<br><i style="font-size:8px; font-weight:normal;">(Custom - Find similar)</i></span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><rect x="13" y="17" width="8" height="4" rx="1"/><path d="M17 17V7a2 2 0 0 0-2-2H8"/><rect x="5" y="5" width="6" height="4" rx="1"/><path d="M7 9v2h2V9"/><line x1="3" y1="21" x2="10" y2="21"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">Doc Cam<br><i style="font-size:8px; font-weight:normal;">(Custom - Find similar)</i></span>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:70px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2d49e8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M2 7h20v5l-3 4H5l-3-4V7z"/><line x1="6" y1="11" x2="18" y2="11"/></svg>
+          <span style="font-size:10px; font-weight:600; color:#555; text-align:center;">HDMI<br><i style="font-size:8px; font-weight:normal;">(Custom - Find similar)</i></span>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Inline SVGs based on Feather Icons</h3>
+        <p>This UI uses vector iconography exclusively. The standard library used is <strong>Feather Icons</strong> (or its modern fork, <strong>Lucide</strong>). To ensure consistency, set viewboxes to <code>0 0 24 24</code>, fill to <code>none</code>, and stroke-width to <code>2</code>.</p>
+        <p>Below is the complete list of standard icons required for this interface, along with their standard library names:</p>
+        <ul style="column-count: 2; column-gap: 20px;">
+          <li><strong>Monitor</strong> (Displays, Display Nav)</li>
+          <li><strong>Chevron-Right / Down</strong> (Display select arrow)</li>
+          <li><strong>Eye-Off</strong> (Blank Screen)</li>
+          <li><strong>Cast</strong> (WiDi Source)</li>
+          <li><strong>Power</strong> (Shutdown)</li>
+          <li><strong>Rotate-CCW</strong> (Default/Reset)</li>
+          <li><strong>Lightbulb</strong> (Lighting Nav)</li>
+          <li><strong>Video</strong> (Camera Nav)</li>
+          <li><strong>Mic / Mic-Off</strong> (Audio Nav / Mute)</li>
+          <li><strong>Volume-X / 1 / 2</strong> (Volume Controls)</li>
+          <li><strong>Settings</strong> (Settings Nav)</li>
+          <li><strong>Projector</strong> <em style="color:#888;">(Custom - Find similar)</em></li>
+          <li><strong>Room PC</strong> <em style="color:#888;">(Custom - Find similar)</em></li>
+          <li><strong>Doc Cam</strong> <em style="color:#888;">(Custom - Find similar)</em></li>
+          <li><strong>HDMI</strong> <em style="color:#888;">(Custom - Find similar)</em></li>
+        </ul>
+        <p style="margin-top:10px;"><em>Note: The "Projector", "Room PC", "Doc Cam", and "HDMI" icons are custom vectors specific to this layout. The exact SVG paths are shown in the icon reference grid above — use those paths directly in Crestron, or locate visual equivalents in a third-party vector library such as Heroicons or Phosphor Icons.</em></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">2</div><h2>Canvas &amp; Panel Size</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;gap:10px;">
+        <div style="width:200px;height:125px;background:#e4e8f0;border-radius:8px;border:2.5px solid #b0b8c8;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="background:#2d49e8;height:16px;width:100%;flex-shrink:0;"></div>
+          <div style="flex:1;display:flex;">
+            <div style="width:52px;background:#f0f2fa;border-right:1px solid #ccc;"></div>
+            <div style="flex:1;background:#fff;"></div>
+          </div>
+          <div style="background:#34333b;height:16px;width:100%;flex-shrink:0;"></div>
+        </div>
+        <span style="font-size:11px;color:#888;font-weight:600;text-align:center;">1280 &times; 800 px — Landscape</span>
+      </div>
+      <div class="spec-exp">
+        <h3>1280 &times; 800 pixels, fixed landscape canvas</h3>
+        <p>Set your Crestron project resolution to exactly <strong>1280 × 800 pixels</strong>. This is a standard widescreen 16:10 ratio used on 10" touchpanels such as the TSW-1060 or TSW-1070. The layout is fully fixed — no scrolling occurs inside the panel itself.</p>
+        <p>The panel is divided into three horizontal zones stacked top to bottom:</p>
+        <ul>
+          <li><strong>Header bar</strong> — 60px tall. Blue background. Always visible, never changes.</li>
+          <li><strong>Main content area</strong> — fills the remaining height (~632px). This area is split into two vertical columns: a 340px left sidebar and the remaining right area.</li>
+          <li><strong>Footer bar</strong> — 88px tall. Dark charcoal background. Contains navigation and volume controls.</li>
+        </ul>
+        <p>The diagram to the left shows this three-zone structure in miniature — blue header, light left sidebar, white right content, dark footer.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">3</div><h2>Colour Palette</h2></div>
+
+    <div class="spec-row">
+      <div class="spec-eg" style="padding:16px;align-items:flex-start;flex-wrap:wrap;">
+        <div class="swatch-row">
+          <div class="swatch"><div class="swatch-dot" style="background:#2d49e8;"></div><div class="swatch-name">Primary Blue</div><div class="swatch-hex">#2D49E8</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#eef1fd;border:1px solid #c5cff5;"></div><div class="swatch-name">Blue Light</div><div class="swatch-hex">#EEF1FD</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#2D7D32;"></div><div class="swatch-name">Active Green</div><div class="swatch-hex">#2D7D32</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#B01A1A;"></div><div class="swatch-name">Power Red</div><div class="swatch-hex">#B01A1A</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#C89A00;"></div><div class="swatch-name">Default Yellow</div><div class="swatch-hex">#C89A00</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#34333b;"></div><div class="swatch-name">Footer Dark</div><div class="swatch-hex">#34333B</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#f0f2fa;border:1px solid #dde;"></div><div class="swatch-name">Panel BG</div><div class="swatch-hex">#F0F2FA</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#DDE1E7;border:1px solid #ccc;"></div><div class="swatch-name">Button BG</div><div class="swatch-hex">#DDE1E7</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#D1D8E0;border:1px solid #bbb;"></div><div class="swatch-name">Border</div><div class="swatch-hex">#D1D8E0</div></div>
+          <div class="swatch"><div class="swatch-dot" style="background:#111827;"></div><div class="swatch-name">Text Dark</div><div class="swatch-hex">#111827</div></div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>A deliberate, restrained palette</h3>
+        <p>Every colour in this system has a specific purpose and should not be used arbitrarily. Here is what each one means:</p>
+        <ul>
+          <li><strong>Primary Blue (#2D49E8)</strong> — the header bar background, active interactive highlights, and slider controls. This is the brand anchor colour.</li>
+          <li><strong>Blue Light (#EEF1FD)</strong> — used as the hover and focus background behind clickable items, giving a subtle blue wash without heavy contrast.</li>
+          <li><strong>Active Green (#2D7D32)</strong> — fills a source button when that input is currently selected and routing to displays. Only ever used for "currently active" state.</li>
+          <li><strong>Power Red (#B01A1A)</strong> — exclusively used for the shutdown/power button and the confirmation modal. Never use this colour for anything else.</li>
+          <li><strong>Default Yellow (#C89A00)</strong> — exclusively used for the Default reset button in the footer. Icon and label use white or near-black for contrast. Never use this colour for general UI elements.</li>
+          <li><strong>Footer Dark (#34333B)</strong> — the charcoal background of the bottom navigation bar. Slightly warmer than pure black.</li>
+          <li><strong>Panel BG (#F0F2FA)</strong> — the slightly blue-tinted grey used behind grouped content in left-side panels.</li>
+          <li><strong>Button BG (#DDE1E7)</strong> — the default resting state of any tappable button. Neutral, low-contrast grey.</li>
+          <li><strong>Border (#D1D8E0)</strong> — used for all card and button outlines. Keep borders consistent at 1.5px.</li>
+          <li><strong>Text Dark (#111827)</strong> — primary label text on white or light backgrounds. Near-black for strong readability on touchscreens.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">4</div><h2>Typography</h2></div>
+
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;align-items:flex-start;gap:14px;padding:24px 28px;">
+        <div>
+          <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#888;margin-bottom:3px;">Section Heading</div>
+          <div style="font-size:16px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#111;">SELECT SOURCE</div>
+        </div>
+        <div>
+          <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#888;margin-bottom:3px;">Button Label</div>
+          <div style="font-size:19px;font-weight:700;color:#111;">Room PC</div>
+        </div>
+        <div>
+          <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#888;margin-bottom:3px;">Group Subtitle</div>
+          <div style="font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5a6080;">Projector</div>
+        </div>
+        <div>
+          <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#888;margin-bottom:3px;">Body / Status</div>
+          <div style="font-size:15px;font-weight:400;color:#2d3748;">Front Left display</div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Segoe UI — four clear levels of hierarchy</h3>
+        <p>Use <strong>Segoe UI</strong> across all panels. If unavailable, fall back to the device's system UI sans-serif font. Never mix typefaces. There are four type roles:</p>
+        <ul>
+          <li><strong>Section Heading</strong> — 16px / weight 700 / ALL CAPS / letter-spacing 0.08em / colour #111827. Used for top-level area labels like "SELECT SOURCE" or "AUDIO".</li>
+          <li><strong>Button Label</strong> — 16–19px / weight 700 / sentence case / colour #111827. Used for source names, display targets, scene names, and any primary tappable label.</li>
+          <li><strong>Group Subtitle</strong> — 12–13px / weight 700 / ALL CAPS / letter-spacing 0.1em / colour #5a6080 (muted). Used inside cards to label sub-groupings like "Projector" or "Audience View".</li>
+          <li><strong>Body / Status</strong> — 15px / weight 400 / colour #2d3748. Used for descriptive text and status strings.</li>
+        </ul>
+        <p>On a touchpanel, readability at arm's length is critical. Avoid any text below 12px in the UI itself.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">5</div><h2>Header Bar</h2></div>
+
+    <div class="spec-row">
+      <div class="spec-eg no-pad">
+        <div style="width:100%;background:#2d49e8;padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;border-radius:13px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:36px;height:36px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#2d49e8;flex-shrink:0;">LU</div>
+            <div>
+              <div style="color:#fff;font-size:12px;font-weight:700;letter-spacing:0.06em;">LINCOLN UNIVERSITY</div>
+              <div style="color:rgba(255,255,255,0.7);font-size:9px;margin-top:2px;letter-spacing:0.06em;">Te Whare W&#x101;naka o Aoraki</div>
+            </div>
+          </div>
+          <div style="color:#fff;font-size:16px;font-weight:600;letter-spacing:0.04em;">Room / Number</div>
+          <div style="color:#fff;font-size:15px;font-weight:400;">9:41 AM</div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Full width &times; 60px — Primary Blue bar</h3>
+        <p>The header spans the full 1280px width and is exactly <strong>60px tall</strong>. Background colour is <strong>#2D49E8</strong>. All text inside is white. Horizontal padding is 28px on each side.</p>
+        <p>The header is divided into three regions:</p>
+        <ul>
+          <li><strong>Left — Institution branding:</strong> A 36px white circle containing the initials "LU" in blue (11px / weight 800). Next to it, the institution name in 15px / weight 700 / uppercase, with the Māori name below at 10px / weight 400 / 80% opacity.</li>
+          <li><strong>Centre — Room identifier:</strong> The room name or number at 18px / weight 600. This should be customised per room. In Crestron, bind this to a text join or hardcode the room name.</li>
+          <li><strong>Right — Live clock:</strong> Current time displayed at 18px / weight 400, right-aligned. Update every minute via a digital join or serial join driven by the processor's real-time clock.</li>
+        </ul>
+        <p>The header is identical across all pages in the system. Do not alter it per page.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">6</div><h2>Default State Logic</h2></div>
+
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;align-items:center;gap:12px;padding:24px;">
+        <div style="background:#C89A00;border-radius:10px;width:90px;height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" width="24" height="24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          <span style="font-size:10px;font-weight:700;color:#fff;letter-spacing:0.08em;">DEFAULT</span>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>System Baseline (Prep Mode) Reset</h3>
+        <p>The yellow "Default" block in the footer resets the room to a known, baseline state without shutting it down completely. This functions more like a "Lecture Prep Mode" rather than an absolute zero state.</p>
+        <p>Triggering the Default block explicitly executes the following specific overrides:</p>
+        <ul>
+          <li><strong>Master Volume:</strong> Snaps strictly to <strong>80%</strong>. <em>(Note: It is highly recommended to place a maximum output ceiling on the DSP side to ensure 80% is not painfully loud depending on the local PC source volume).</em></li>
+          <li><strong>Projector:</strong> Blanked / No Source (Off).</li>
+          <li><strong>Instructor &amp; Front Displays:</strong> The <strong>Podium</strong>, <strong>Front Left</strong>, and <strong>Front Right</strong> displays are forced to show the <strong>Room PC</strong> source.</li>
+          <li><strong>Rear Displays:</strong> Rear Left and Rear Right states remain <em>unchanged</em> from whatever the user had them set to previously.</li>
+        </ul>
+        <p>The UI visually reflects these states immediately upon pressing the button by highlighting the "Room PC" source button and modifying the individual display cards.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">7</div><h2>Left Column — Display Routing &amp; Override</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg no-pad" style="align-items:stretch;">
+        <div style="width:100%;background:#f0f2fa;border-right:1.5px solid #D1D8E0;border-radius:13px;padding:16px 14px;display:flex;flex-direction:column;gap:10px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#111;">Tap display to change source</span>
+          
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5a6080;margin-top:2px;">Projector</div>
+          <div style="background:#2d49e8;border:1.5px solid #2d49e8;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:flex-start;">
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <div style="font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="16" cy="12" r="3"/><line x1="6" y1="10" x2="10" y2="10"/><line x1="6" y1="14" x2="10" y2="14"/><path d="M13 6V4h2v2"/><path d="M17 6V4h2v2"/><path d="M5 18v2h3v-2"/><path d="M16 18v2h3v-2"/></svg>
+                Projector
+              </div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.75);font-weight:400;">Active Source: Room PC</div>
+            </div>
+          </div>
+          
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5a6080;margin-top:2px;">Projector</div>
+          <div style="background:#2d49e8;border:1.5px solid #2d49e8;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:flex-start;">
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <div style="font-size:16px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="16" cy="12" r="3"/><line x1="6" y1="10" x2="10" y2="10"/><line x1="6" y1="14" x2="10" y2="14"/><path d="M13 6V4h2v2"/><path d="M17 6V4h2v2"/><path d="M5 18v2h3v-2"/><path d="M16 18v2h3v-2"/></svg>
+                Projector
+              </div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.75);font-weight:400;font-style:italic;">Active Source: None</div>
+            </div>
+          </div>
+          
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#5a6080;margin-top:2px;">Audience View: Displays</div>
+          <div style="background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:flex-start;">
+            <div style="display:flex;flex-direction:column;gap:2px;">
+              <div style="font-size:16px;font-weight:700;color:#2d3748;display:flex;align-items:center;gap:8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#2d3748" stroke-width="1.8" width="16" height="16"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+                Front Left
+              </div>
+              <div style="font-size:11px;color:#5a6080;font-style:italic;">Active Source: None</div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Default Global Routing &amp; Manual Override</h3>
+        <p>The left column is explicitly labelled <strong>"Tap display to change source"</strong> to communicate that manual overrides are an optional, secondary workflow. Displays are grouped into white cards (Projector, Podium, Audience View).</p>
+        <p><strong>Default Global Routing:</strong> Tapping a source button <em>without</em> explicitly selecting a display first will automatically route that source to <strong>all</strong> displays simultaneously. This ensures standard, room-wide changes are instant.</p>
+        <p><strong>Manual Overrides:</strong> The left panel display buttons use the universal left-panel button style (16px bold, no chevron, 60px min-height). A selected display awaiting input always shows:</p>
+        <ul>
+          <li>A full <strong><code>#2D49E8</code> blue fill with white text</strong>, regardless of whether it currently has an active source or is blank. This provides a perfectly consistent active state target.</li>
+          <li>Tapping a source then routes it <em>only</em> to the targeted display, bypassing the global default.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">8</div><h2>Source Selection — Right Column</h2></div>
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;gap:8px;padding:14px;align-items:stretch;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:#2D7D32;border:1.5px solid #1b5e20;border-radius:12px;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px;">
+            <svg viewBox="0 0 38 26" fill="none" stroke="#fff" stroke-width="1.6" width="28" height="19"><rect x="1" y="1" width="36" height="24" rx="3"/><rect x="3" y="4" width="4" height="3" rx="0.8"/><rect x="8" y="4" width="4" height="3" rx="0.8"/></svg>
+            <span style="font-size:13px;font-weight:700;color:#fff;">Room PC</span>
+          </div>
+          <div style="background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:12px;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.8" width="30" height="30"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+            <span style="font-size:13px;font-weight:700;color:#111;">WiDi</span>
+          </div>
+        </div>
+          <div style="background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:12px;min-height:54px;display:flex;align-items:center;justify-content:center;gap:10px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+            <span style="font-size:11px;font-weight:700;color:#555;">Blank all displays</span>
+        </div>
+        <div style="display:flex;justify-content:center;margin-top:12px;"> 
+          <div style="background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:14px;display:inline-flex;align-items:center;justify-content:center; width: 260px; height: 60px; font-size:19px; font-weight:700; color:#111;">
+            Apply All
+          </div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Source highlighting for immediate feedback</h3>
+          <p>When a display is tapped in the left column, the Source grid automatically updates to highlight the current source actively routed to that specific display. If the display is showing "Room PC", the Room PC source button will instantly highlight in <code>#2D7D32</code> green. If the display is blanked, the "Blank all displays" button will highlight in <code>#2D49E8</code> blue. This provides the operator with instant, clear visual feedback of the system's routing state.</p>
+        <p>The <strong>Apply All</strong> button is positioned centrally below the source grid with reduced spacing. It perfectly matches the neutral grey resting state (<code>#DDE1E7</code>) and black text of the standard source buttons, acting as a clear but understated tool for global routing. It bypasses heavy animations or color changes, relying on a simple flat press interaction.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">9</div><h2>Footer Navigation Bar</h2></div>
+
+    <div class="spec-row">
+      <div class="spec-eg no-pad">
+        <div style="width:100%;height:72px;background:#34333b;border-radius:13px;display:flex;align-items:stretch;overflow:hidden;">
+          <div style="background:#B01A1A;width:84px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" width="26" height="26"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          </div>
+          <div style="display:flex;align-items:stretch;border-right:1px solid rgba(255,255,255,0.12);">
+            <div style="padding:0 14px;display:flex;align-items:center;background:#e8e8e8;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="1.8" width="20" height="20"><rect x="2" y="3" width="20" height="15" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+            </div>
+            <div style="padding:0 14px;display:flex;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.8" width="20" height="20"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.2 4.16-3 5.2V18H9v-3.8A6 6 0 0 1 6 9a6 6 0 0 1 6-6z"/></svg>
+            </div>
+            <div style="padding:0 14px;display:flex;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.8" width="20" height="20"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            </div>
+            <div style="padding:0 14px;display:flex;align-items:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.8" width="20" height="20"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+            </div>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:2px;padding:0 14px;border-left:1px solid rgba(255,255,255,0.12);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" width="18" height="18"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" width="18" height="18"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a3 3 0 0 1 0 4.24"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" width="18" height="18"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Full width &times; 88px — Charcoal navigation bar</h3>
+        <p>The footer sits at the very bottom of the panel and is exactly <strong>88px tall</strong>. Background is <strong>#34333B</strong> with a 2px top border of <strong>#28272E</strong>. It is the same on every page — only the active nav button changes. It is divided into four zones from left to right:</p>
+        <ul>
+          <li><strong>Shutdown block (left):</strong> A full-height crimson block, approximately 100px wide, with a power icon and "SHUTDOWN" label stacked vertically. Tapping this triggers the Shutdown modal. Background is <strong>#B01A1A</strong>, darkening on hover. Deliberately separated from navigation.</li>
+          <li><strong>Default block:</strong> A full-height <strong>#C89A00</strong> yellow block, approximately 90px wide, with a reset/return arrow icon and "DEFAULT" label stacked vertically. Resets the room to default state. Icon and label are white (near-black) for legibility on the yellow background.</li>
+          <li><strong>Navigation buttons (centre):</strong> 5 page buttons, each approximately 72px wide, stacked icon + label. Icons are white at <strong>55% opacity</strong> when inactive; labels are 10px / weight 600 in the same muted white. The active page button gets a solid <strong>#E8E8E8</strong> background with icon and label in dark colour (<strong>#111827</strong>). Pages: Display (monitor), Lighting (bulb), Camera (video), Audio (mic), Settings (gear).</li>
+          <li><strong>Volume controls (right):</strong> Right-aligned group containing a mic-mute toggle with "Mic Mute" label and three volume icon buttons. When mic is muted, the icon and label turn <strong>#FF6B6B</strong> red.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="spec-note">
+      The nav icon group is separated from volume controls by a 1px vertical divider at <code>rgba(255,255,255,0.12)</code>. The same subtle divider separates the power block from the nav icons on the right side of the power block.
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">10</div><h2>Shutdown Confirmation Modal</h2></div>
+
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;align-items:center;gap:12px;padding:28px 24px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:#fde8e8;display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#B01A1A" stroke-width="2" width="30" height="30"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+        </div>
+        <span style="font-size:18px;font-weight:800;color:#111;">Shutdown System</span>
+        <span style="font-size:13px;color:#555;text-align:center;line-height:1.5;">Are you sure you want to<br>shut down this room?<br><em style="font-size:12px;color:#888;">All active sessions will be ended.</em></span>
+        <div style="display:flex;gap:10px;width:100%;margin-top:4px;">
+          <div style="flex:1;background:#B01A1A;border-radius:10px;padding:12px;text-align:center;font-size:13px;font-weight:700;color:#fff;">Yes, Shut Down</div>
+          <div style="flex:1;background:#DDE1E7;border:1.5px solid #D1D8E0;border-radius:10px;padding:12px;text-align:center;font-size:13px;font-weight:700;color:#555;">Cancel</div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Full-canvas overlay — triggered by the power button only</h3>
+        <p>When the operator taps the red power block in the footer, a modal overlay covers the <strong>entire 1280×800 canvas</strong>. This is an intentional full-screen interruption to prevent accidental shutdown. The overlay background is a dark semi-transparent layer (<code>rgba(17,24,39,0.82)</code>) with a subtle blur effect.</p>
+        <p>The white modal content is centred on screen and contains, from top to bottom:</p>
+        <ul>
+          <li>A <strong>96px circle</strong> with a light red tint background (<code>#FDE8E8</code>) and the power icon inside in red (<code>#B01A1A</code>). This reinforces the gravity of the action visually.</li>
+          <li>A <strong>title</strong> at 32px / weight 800 — "Shutdown System".</li>
+          <li><strong>Body text</strong> at 20px explaining what will happen: room will shut down and all sessions end.</li>
+          <li>Two <strong>action buttons</strong> side by side, each with a maximum width of 240px and 16px border radius. "Yes, Shut Down" is filled red. "Cancel" is grey with a border. Both dismiss the modal — only "Yes" should trigger the actual shutdown sequence.</li>
+        </ul>
+        <p>Do not allow any other tap target to dismiss this modal. The operator must explicitly choose one of the two buttons.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">11</div><h2>Consistent Left Panel Width Across All Pages</h2></div>
+
+    <div class="spec-row">
+      <div class="spec-eg no-pad" style="overflow:hidden;">
+        <div style="display:flex;gap:0;width:100%;height:160px;border-radius:14px;overflow:hidden;border:1px solid #e8e8e8;">
+          <div style="flex:1;display:flex;flex-direction:column;border-right:1px solid #e8e8e8;">
+            <div style="background:#2d49e8;height:18px;flex-shrink:0;"></div>
+            <div style="flex:1;display:flex;">
+              <div style="width:68px;background:#f0f2fa;border-right:1.5px solid #D1D8E0;display:flex;flex-direction:column;gap:5px;padding:8px 6px;">
+                <div style="height:14px;background:#D1D8E0;border-radius:4px;"></div>
+                <div style="height:22px;background:#fff;border-radius:5px;border:1px solid #D1D8E0;"></div>
+                <div style="height:22px;background:#2d49e8;border-radius:5px;"></div>
+                <div style="height:22px;background:#fff;border-radius:5px;border:1px solid #D1D8E0;"></div>
+              </div>
+              <div style="flex:1;padding:8px;display:flex;flex-direction:column;gap:5px;">
+                <div style="height:10px;background:#f0f2fa;border-radius:3px;width:60%;"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;flex:1;">
+                  <div style="background:#DDE1E7;border-radius:5px;border:1px solid #D1D8E0;"></div>
+                  <div style="background:#2D7D32;border-radius:5px;"></div>
+                  <div style="background:#DDE1E7;border-radius:5px;border:1px solid #D1D8E0;"></div>
+                  <div style="background:#DDE1E7;border-radius:5px;border:1px solid #D1D8E0;"></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:#34333b;height:20px;flex-shrink:0;"></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="background:#2d49e8;height:18px;flex-shrink:0;"></div>
+            <div style="flex:1;display:flex;">
+              <div style="width:68px;background:#f0f2fa;border-right:1.5px solid #D1D8E0;display:flex;flex-direction:column;gap:5px;padding:8px 6px;">
+                <div style="height:14px;background:#D1D8E0;border-radius:4px;"></div>
+                <div style="height:22px;background:#fff;border-radius:5px;border:1px solid #D1D8E0;display:flex;align-items:center;padding:0 5px;gap:4px;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#D1D8E0;flex-shrink:0;"></div>
+                  <div style="height:6px;flex:1;background:#D1D8E0;border-radius:3px;"></div>
+                </div>
+                <div style="height:22px;background:#fff;border-radius:5px;border:1px solid #D1D8E0;display:flex;align-items:center;padding:0 5px;gap:4px;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#f0c040;flex-shrink:0;"></div>
+                  <div style="height:6px;flex:1;background:#D1D8E0;border-radius:3px;"></div>
+                </div>
+                <div style="height:22px;background:#fff;border-radius:5px;border:1px solid #D1D8E0;display:flex;align-items:center;padding:0 5px;gap:4px;">
+                  <div style="width:10px;height:10px;border-radius:50%;background:#D1D8E0;flex-shrink:0;"></div>
+                  <div style="height:6px;flex:1;background:#D1D8E0;border-radius:3px;"></div>
+                </div>
+              </div>
+              <div style="flex:1;padding:8px;display:flex;flex-direction:column;gap:5px;">
+                <div style="height:10px;background:#f0f2fa;border-radius:3px;width:50%;"></div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+                  <div style="height:28px;background:#DDE1E7;border-radius:5px;border:1px solid #D1D8E0;"></div>
+                  <div style="height:28px;background:#DDE1E7;border-radius:5px;border:1px solid #D1D8E0;"></div>
+                  <div style="height:28px;background:#DDE1E7;border-radius:5px;border:1px solid #D1D8E0;"></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:#34333b;height:20px;flex-shrink:0;"></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:10px;padding:0 12px 12px;">
+          <div style="display:flex;align-items:center;gap:4px;">
+            <div style="width:3px;height:12px;background:#2d49e8;border-radius:1px;"></div>
+            <div style="height:2px;width:52px;background:#2d49e8;"></div>
+            <div style="width:3px;height:12px;background:#2d49e8;border-radius:1px;"></div>
+          </div>
+          <span style="font-size:11px;font-weight:800;color:#2d49e8;letter-spacing:0.05em;">340px</span>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <div style="width:3px;height:12px;background:#2d49e8;border-radius:1px;"></div>
+            <div style="height:2px;width:52px;background:#2d49e8;"></div>
+            <div style="width:3px;height:12px;background:#2d49e8;border-radius:1px;"></div>
+          </div>
+          <span style="font-size:11px;font-weight:800;color:#2d49e8;letter-spacing:0.05em;">340px</span>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>340px — fixed and identical on every page that has a left panel</h3>
+        <p>Any page that uses the two-column layout (left context panel + right content area) must set the left column to exactly <strong>340px</strong>. This applies to: Display (Multi), Camera, Lighting, and Audio. Pages without a left panel (Display Simple, Settings) are exempt.</p>
+        <p>Keeping the width identical across pages ensures the operator's eye always lands in the same place when switching pages. The left panel is a consistent navigational landmark — if it shifts width between pages, the UI feels broken even if every page works correctly in isolation.</p>
+        <ul>
+          <li><strong>Grid definition:</strong> <code>grid-template-columns: 340px 1fr</code> — never <code>300px</code>, never <code>320px</code>, never <code>auto</code>.</li>
+          <li><strong>Padding inside the panel</strong> may vary slightly per page (e.g. <code>24px 20px</code> vs <code>22px 18px</code>) to accommodate different content densities — but the outer 340px column width must never change.</li>
+          <li><strong>Border:</strong> Always <code>1.5px solid var(--border)</code> on the right edge of the panel. This is part of the panel's visual footprint.</li>
+          <li><strong>Background:</strong> Always <code>var(--bg-panel)</code> — the same <code>#F0F2FA</code> blue-tinted off-white used system-wide for secondary surfaces.</li>
+        </ul>
+        <p>Do not widen this panel to accommodate more content. If a page has more items than fit, use internal scroll within the panel or reorganise content — never break the 340px rule.</p>
+      </div>
+    </div>
+
+    <div class="spec-note">
+      The 340px width was chosen because it is the widest left panel needed (Display routing has the most items). All other pages adopt this same value so the layout grid never shifts between pages during normal operation.
+    </div>
+  </div>
+
+  <div class="spec-section">
+    <div class="spec-section-hdr"><div class="spec-num">12</div><h2>Audio Controls</h2></div>
+
+    <div class="spec-row">
+      <div class="spec-eg" style="flex-direction:column;gap:12px;padding:20px 24px;align-items:stretch;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" width="20" height="20"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <span style="font-size:13px;font-weight:700;color:#2d3748;min-width:70px;">Master Vol</span>
+          <div style="flex:1;background:#f0f2fa;border:1.5px solid #D1D8E0;border-radius:10px;display:flex;align-items:center;overflow:hidden;min-height:46px;">
+            <div style="width:46px;min-height:46px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#555;border-right:1.5px solid #D1D8E0;">&minus;</div>
+            <div style="flex:1;padding:8px 14px;position:relative;display:flex;align-items:center;">
+              <div style="width:100%;height:6px;background:#D1D8E0;border-radius:3px;position:relative;">
+                <div style="width:24px;height:24px;background:#2d49e8;border-radius:50%;border:3px solid #fff;position:absolute;top:-9px;left:55%;box-shadow:0 1px 4px rgba(45,73,232,0.35);"></div>
+              </div>
+            </div>
+            <div style="width:46px;min-height:46px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#555;border-left:1.5px solid #D1D8E0;">+</div>
+          </div>
+        </div>
+      </div>
+      <div class="spec-exp">
+        <h3>Pill-style slider — Master Volume only</h3>
+        <p>Below the source buttons, a horizontal divider separates the audio control area. The audio section contains a single <strong>Master Volume</strong> control that expands to fill the full available width. The Mic Level row has been removed — microphone gain is managed at the system level, not from this panel.</p>
+        <p>The Master Volume row is laid out horizontally and contains:</p>
+        <ul>
+          <li><strong>Icon (left):</strong> A 22px speaker SVG icon drawn in the muted text colour (<code>#5a6080</code>) so it reads as supplementary, not primary.</li>
+          <li><strong>Label:</strong> "Master Vol" at 15px / weight 700 / min-width 72px.</li>
+          <li><strong>Pill control:</strong> A full-height rounded container (<code>#F0F2FA</code> background, <code>#D1D8E0</code> border, 12px radius) that flexes to fill all remaining horizontal space. Contains three zones: a <strong>minus step button</strong> (52px wide, adjusts by −5%), a <strong>slider track</strong> with a blue circle thumb, and a <strong>plus step button</strong> (52px wide). No numeric value label is shown — the slider thumb position is the only level indicator.</li>
+        </ul>
+        <p>The slider thumb is <code>#2D49E8</code> blue with a 3px white border and a soft drop shadow. Tapping the step buttons is the primary interaction on a touchpanel; the slider itself is secondary for fine-tuning.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<a href="#spec-guide" class="floating-scroll-hint" onclick="handleScrollHint(event)">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><line x1="12" y1="4" x2="12" y2="20"/><polyline points="18 14 12 20 6 14"/></svg>
+  Design Principles
+</a>
+
+</body>
+</html>
